@@ -13,6 +13,7 @@ using UnityEngine.Networking;
 using UnityEngine.AddressableAssets;
 using R2API.Utils;
 using RoR2.Projectile;
+using RoR2.CharacterAI;
 
 namespace FathomlessVoidling
 {
@@ -37,9 +38,42 @@ namespace FathomlessVoidling
     public static GameObject voidRainWarning = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/MultiBeamRayIndicator.prefab").WaitForCompletion();
     public static GameObject voidRainTracer = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/TracerVoidRaidCrabTripleBeamSmall.prefab").WaitForCompletion();
     public static GameObject voidRainExplosion = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabTripleBeamExplosion.prefab").WaitForCompletion();
+    private static GameObject stepEffect = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabStep.prefab").WaitForCompletion();
+    private static GameObject voidlingMaster = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabMaster.prefab").WaitForCompletion();
+
     public void Awake()
     {
-      voidRainPortalEffect.transform.localScale /= 4;
+      foreach (AISkillDriver skillDriver in voidlingMaster.GetComponent<CharacterMaster>().GetComponents<AISkillDriver>())
+      {
+        // skillDriver.movementType = AISkillDriver.MovementType.ChaseMoveTarget;
+      }
+
+      StriderLegController miniSLC = miniVoidling.GetComponent<ModelLocator>().modelTransform.gameObject.GetComponent<StriderLegController>();
+
+      Destroy(voidling.GetComponent<ModelLocator>().modelTransform.gameObject.GetComponent<CentralLegControllerAnimationEventReceiver>());
+      // Destroy(voidling.GetComponent<CentralLegController>());
+      Destroy(voidling.GetComponent<AimTurnStateController>());
+
+      Transform modelTransform = voidling.GetComponent<ModelLocator>().modelTransform;
+
+      StriderLegController striderLegController = modelTransform.gameObject.AddComponent<StriderLegController>();
+      striderLegController.centerOfGravity = voidling.GetComponent<ModelLocator>().modelTransform;
+      striderLegController.footDampTime = 0.2f;
+      striderLegController.footMoveString = "";
+      striderLegController.footPlantEffect = stepEffect;
+      striderLegController.footPlantString = "Play_voidRaid_step";
+      striderLegController.footRaycastFrequency = 15;
+      striderLegController.maxFeetReplantingAtOnce = 2;
+      striderLegController.maxRaycastDistance = 200;
+      striderLegController.overstepDistance = 7;
+      striderLegController.raycastVerticalOffset = 30;
+      striderLegController.replantDuration = 0.4f;
+      striderLegController.replantHeight = 10;
+      striderLegController.stabilityRadius = 10;
+      striderLegController.footRaycastDirection = new Vector3(0f, -0.6f, -1.02f);
+      striderLegController.lerpCurve = miniSLC.lerpCurve;
+
+      voidRainPortalEffect.transform.localScale /= 2;
 
       ContentAddition.AddEffect(voidRainPortalEffect);
 
@@ -80,15 +114,18 @@ namespace FathomlessVoidling
         child.localScale *= 4;
       }
 
-      // voidling.GetComponent<SkillLocator>().primary.skillFamily.variants[0].skillDef.activationState = new SerializableEntityStateType(typeof(ChargeVoidRain));
+      voidling.GetComponent<SkillLocator>().utility.skillFamily.variants[0].skillDef.activationState = new SerializableEntityStateType(typeof(ChargeVoidRain));
+      voidling.GetComponent<SkillLocator>().secondary.skillFamily.variants[0].skillDef.baseMaxStock = 1;
+      voidling.GetComponent<SkillLocator>().secondary.skillFamily.variants[0].skillDef.baseRechargeInterval = 20f;
 
-      voidling.GetComponent<CharacterDirection>().turnSpeed = 200f;
+      voidling.GetComponent<SkillLocator>().utility.skillFamily.variants[0].skillDef.baseMaxStock = 1;
+      voidling.GetComponent<SkillLocator>().utility.skillFamily.variants[0].skillDef.baseRechargeInterval = 30f;
+
+      voidling.GetComponent<CharacterDirection>().turnSpeed = 0.5f;
       GameObject model = voidling.GetComponent<ModelLocator>().modelTransform.gameObject;
       model.AddComponent<PrintController>();
 
       On.RoR2.Stage.Start += Stage_Start;
-      On.EntityStates.VoidRaidCrab.TurnState.OnEnter += TurnState_OnEnter;
-      // On.RoR2.VoidRaidCrab.CentralLegController.TryNextStompAuthority += CentralLegController_TryNextStompAuthority;
       On.RoR2.CharacterMaster.OnBodyStart += CharacterMaster_OnBodyStart;
       On.EntityStates.VoidRaidCrab.SpawnState.OnEnter += VoidRaidCrab_SpawnState;
       On.EntityStates.VoidRaidCrab.Collapse.OnEnter += Collapse_OnEnter;
@@ -109,49 +146,29 @@ namespace FathomlessVoidling
       GameObject primitive = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
       primitive.GetComponent<MeshRenderer>().material = voidCylinderMat;
       UnityEngine.Object.Destroy(primitive.GetComponent<CapsuleCollider>());
-      primitive.AddComponent<MeshCollider>();
+      MeshCollider collider = primitive.AddComponent<MeshCollider>();
       // primitive.AddComponent<ReverseNormals>();
       primitive.transform.localScale = new Vector3(110f, 1250f, 110f);
       primitive.name = "Cheese Deterrent";
       primitive.transform.SetParent(gameObject.transform);
       primitive.transform.localPosition = Vector3.zero;
-      primitive.layer = 10;
-    }
+      primitive.layer = LayerIndex.world.intVal;
 
-    private void CentralLegController_TryNextStompAuthority(On.RoR2.VoidRaidCrab.CentralLegController.orig_TryNextStompAuthority orig, CentralLegController self)
-    {
-      bool IsStomping = false;
-      for (int index = 0; index < self.legControllers.Length; ++index)
-      {
-        if (self.legControllers[index].IsStomping())
-          IsStomping = true;
-      }
-      if (self.bodyStateMachine.state.GetType() != typeof(SpawnState) && !IsStomping)
-      {
-        foreach (var leg in self.legControllers)
-        {
-          GameObject target = leg.CheckForStompTarget();
-          if (target)
-          {
-            leg.RequestStomp(target);
-          }
-        }
-      }
-    }
-
-    private void TurnState_OnEnter(On.EntityStates.VoidRaidCrab.TurnState.orig_OnEnter orig, TurnState self)
-    {
-      IntPtr functionPointer = typeof(BaseState).GetMethod("OnEnter").MethodHandle.GetFunctionPointer();
-      ((Action)Activator.CreateInstance(typeof(Action), self, functionPointer))();
-      if (!self.isAuthority)
-        return;
-      self.outer.SetNextStateToMain();
+      GameObject disableCollisions = new("DisableCollisions");
+      disableCollisions.transform.parent = primitive.transform;
+      disableCollisions.transform.localScale = new Vector3(0.0091f, 0.0008f, 0.0091f);
+      disableCollisions.layer = LayerIndex.entityPrecise.intVal;
+      DisableCollisionsIfInTrigger disableTrigger = disableCollisions.AddComponent<DisableCollisionsIfInTrigger>();
+      disableTrigger.colliderToIgnore = collider;
+      SphereCollider sphereCollider = disableCollisions.GetComponent<SphereCollider>();
+      sphereCollider.radius = 85f;
+      sphereCollider.isTrigger = true;
     }
 
     private void VacuumAttack_OnEnter(On.EntityStates.VoidRaidCrab.VacuumAttack.orig_OnEnter orig, VacuumAttack self)
     {
       VacuumAttack.killRadiusCurve = AnimationCurve.Linear(0, 0, 1, 100);
-      VacuumAttack.pullMagnitudeCurve = AnimationCurve.Linear(0, 0, 1, 60);
+      VacuumAttack.pullMagnitudeCurve = AnimationCurve.Linear(0, 0, 1, 45);
       orig(self);
     }
 
@@ -251,6 +268,42 @@ namespace FathomlessVoidling
     {
       if (self.characterBody.name == "VoidRaidCrabBody(Clone)")
       {
+        Transform modelTransform = self.GetModelTransform();
+
+        modelTransform.gameObject.GetComponent<StriderLegController>().feet = new StriderLegController.FootInfo[6]
+  {
+        new StriderLegController.FootInfo()
+        {
+          // backleg L
+          referenceTransform = modelTransform.GetChild(0).GetChild(0),
+          transform = modelTransform.GetChild(0).GetChild(6).GetChild(5).GetChild(0)
+        },
+        new StriderLegController.FootInfo()
+        {
+          referenceTransform = modelTransform.GetChild(0).GetChild(1),
+          transform = modelTransform.GetChild(0).GetChild(6).GetChild(5).GetChild(1)
+        },
+        new StriderLegController.FootInfo()
+        {
+          referenceTransform = modelTransform.GetChild(0).GetChild(2),
+          transform = modelTransform.GetChild(0).GetChild(6).GetChild(5).GetChild(2)
+        },
+        new StriderLegController.FootInfo()
+        {
+          referenceTransform =modelTransform.GetChild(0).GetChild(3),
+          transform = modelTransform.GetChild(0).GetChild(6).GetChild(5).GetChild(3)
+        },
+        new StriderLegController.FootInfo()
+        {
+          referenceTransform = modelTransform.GetChild(0).GetChild(4),
+          transform =modelTransform.GetChild(0).GetChild(6).GetChild(5).GetChild(4)
+        },
+        new StriderLegController.FootInfo()
+        {
+          referenceTransform = modelTransform.GetChild(0).GetChild(5),
+          transform = modelTransform.GetChild(0).GetChild(6).GetChild(5).GetChild(5)
+        }
+  };
         self.outer.SetState(new BetterSpawnState());
       }
       else
@@ -262,7 +315,6 @@ namespace FathomlessVoidling
       orig(self);
       if (self.sceneDef.cachedName == "voidraid")
       {
-        CreateTube();
         GameObject phases = GameObject.Find("EncounterPhases");
         Transform cam = GameObject.Find("RaidVoid").transform.GetChild(8);
         if (phases)

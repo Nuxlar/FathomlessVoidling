@@ -97,6 +97,7 @@ namespace FathomlessVoidling
             {
                 ref RaycastHit local = ref raycastHitArray[index];
                 float distance = local.distance;
+                Debug.LogWarning(local.collider.transform.root);
                 if ((double)distance < (double)a && local.collider.transform.root != root)
                     a = distance;
             }

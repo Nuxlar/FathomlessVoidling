@@ -31,7 +31,7 @@ namespace FathomlessVoidling
       base.OnEnter();
       int num = (int)Util.PlaySound(this.spawnSoundString, GameObject.Find("SpawnCamera"));
       if ((bool)(Object)this.spawnEffectPrefab)
-        EffectManager.SpawnEffect(this.spawnEffectPrefab, new EffectData() { origin = new Vector3(0, 0, 0), scale = 2, rotation = Quaternion.AngleAxis(180, Vector3.forward) }, true);
+        EffectManager.SpawnEffect(this.spawnEffectPrefab, new EffectData() { origin = new Vector3(0, -60, 0), scale = 2, rotation = Quaternion.identity }, true);
       if (!this.doLegs || !NetworkServer.active)
         return;
       ChildLocator modelChildLocator = this.GetModelChildLocator();
@@ -78,6 +78,7 @@ namespace FathomlessVoidling
       base.FixedUpdate();
       if ((double)this.fixedAge >= (double)this.delay && !playedAnim)
       {
+        FathomlessVoidling.CreateTube();
         TeleportHelper.TeleportGameObject(this.gameObject, new Vector3(0, -10, 0));
         // TeleportHelper.TeleportBody(this.characterBody, new Vector3(0, -10, 0));
         this.PlayAnimation(this.animationLayerName, this.animationStateName, this.animationPlaybackRateParam, this.duration);

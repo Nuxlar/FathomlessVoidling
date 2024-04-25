@@ -14,6 +14,7 @@ using UnityEngine.AddressableAssets;
 using R2API.Utils;
 using RoR2.Projectile;
 using RoR2.CharacterAI;
+using RoR2.Skills;
 
 namespace FathomlessVoidling
 {
@@ -40,12 +41,45 @@ namespace FathomlessVoidling
     public static GameObject voidRainExplosion = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabTripleBeamExplosion.prefab").WaitForCompletion();
     private static GameObject stepEffect = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabStep.prefab").WaitForCompletion();
     private static GameObject voidlingMaster = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabMaster.prefab").WaitForCompletion();
+    private static SkillDef secondaryDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidRaidCrab/RaidCrabMultiBeam.asset").WaitForCompletion();
+    private static SkillDef utilityDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidRaidCrab/RaidCrabSpinBeam.asset").WaitForCompletion();
+    private static SkillDef gauntletDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidRaidCrab/RaidCrabChannelGauntlet.asset").WaitForCompletion();
 
     public void Awake()
     {
       foreach (AISkillDriver skillDriver in voidlingMaster.GetComponent<CharacterMaster>().GetComponents<AISkillDriver>())
       {
-        // skillDriver.movementType = AISkillDriver.MovementType.ChaseMoveTarget;
+        switch (skillDriver.customName)
+        {
+          case "Channel Gauntlet 1":
+            skillDriver.maxUserHealthFraction = 0.66f;
+            break;
+          case "Channel Gauntlet 2":
+            skillDriver.maxUserHealthFraction = 0.33f;
+            break;
+          case "FireMissiles":
+            skillDriver.movementType = AISkillDriver.MovementType.ChaseMoveTarget;
+            break;
+          case "FireMultiBeam":
+            skillDriver.movementType = AISkillDriver.MovementType.ChaseMoveTarget;
+            break;
+          case "SpinBeam":
+            skillDriver.maxUserHealthFraction = 1f;
+            skillDriver.requiredSkill = null;
+            break;
+          case "GravityBump":
+            skillDriver.maxUserHealthFraction = 1f;
+            skillDriver.requiredSkill = null;
+            skillDriver.skillSlot = SkillSlot.Utility;
+            break;
+          case "Vacuum Attack":
+            skillDriver.maxUserHealthFraction = 0.9f;
+            skillDriver.requiredSkill = null;
+            break;
+          case "LookAtTarget":
+            skillDriver.movementType = AISkillDriver.MovementType.ChaseMoveTarget;
+            break;
+        }
       }
 
       StriderLegController miniSLC = miniVoidling.GetComponent<ModelLocator>().modelTransform.gameObject.GetComponent<StriderLegController>();
@@ -65,12 +99,12 @@ namespace FathomlessVoidling
       striderLegController.footRaycastFrequency = 15;
       striderLegController.maxFeetReplantingAtOnce = 2;
       striderLegController.maxRaycastDistance = 200;
-      striderLegController.overstepDistance = 7;
+      striderLegController.overstepDistance = 21;
       striderLegController.raycastVerticalOffset = 30;
       striderLegController.replantDuration = 0.4f;
-      striderLegController.replantHeight = 10;
-      striderLegController.stabilityRadius = 10;
-      striderLegController.footRaycastDirection = new Vector3(0f, -0.6f, -1.02f);
+      striderLegController.replantHeight = 40;
+      striderLegController.stabilityRadius = 40;
+      // striderLegController.footRaycastDirection = new Vector3(0f, -0.6f, -1.02f);
       striderLegController.lerpCurve = miniSLC.lerpCurve;
 
       voidRainPortalEffect.transform.localScale /= 2;
@@ -96,7 +130,7 @@ namespace FathomlessVoidling
       missileImpact.transform.localScale *= 4;
       missileProjectile.GetComponent<ProjectileSimple>().oscillate = true;
       missileProjectile.GetComponent<ProjectileSimple>().oscillateSpeed = 5f;
-      missileProjectile.GetComponent<ProjectileSteerTowardTarget>().rotationSpeed = 60f;
+      missileProjectile.GetComponent<ProjectileSteerTowardTarget>().rotationSpeed = 30f;
       missileProjectile.AddComponent<ProjectileImpactExplosion>().blastRadius = 3f;
       missileProjectile.GetComponent<ProjectileImpactExplosion>().impactEffect = missileImpact;
       missileProjectile.GetComponent<ProjectileImpactExplosion>().destroyOnWorld = true;
@@ -114,12 +148,11 @@ namespace FathomlessVoidling
         child.localScale *= 4;
       }
 
-      voidling.GetComponent<SkillLocator>().utility.skillFamily.variants[0].skillDef.activationState = new SerializableEntityStateType(typeof(ChargeVoidRain));
-      voidling.GetComponent<SkillLocator>().secondary.skillFamily.variants[0].skillDef.baseMaxStock = 1;
-      voidling.GetComponent<SkillLocator>().secondary.skillFamily.variants[0].skillDef.baseRechargeInterval = 20f;
+      secondaryDef.baseRechargeInterval = 20f;
+      secondaryDef.activationState = new SerializableEntityStateType(typeof(ChargeVoidRain));
 
-      voidling.GetComponent<SkillLocator>().utility.skillFamily.variants[0].skillDef.baseMaxStock = 1;
-      voidling.GetComponent<SkillLocator>().utility.skillFamily.variants[0].skillDef.baseRechargeInterval = 30f;
+      voidling.GetComponent<SkillLocator>().secondary.skillFamily.variants[0].skillDef = secondaryDef;
+      voidling.GetComponent<SkillLocator>().utility.skillFamily.variants[0].skillDef = utilityDef;
 
       voidling.GetComponent<CharacterDirection>().turnSpeed = 0.5f;
       GameObject model = voidling.GetComponent<ModelLocator>().modelTransform.gameObject;
@@ -132,11 +165,38 @@ namespace FathomlessVoidling
       On.EntityStates.VoidRaidCrab.ReEmerge.OnEnter += ReEmerge_OnEnter;
       On.EntityStates.VoidRaidCrab.VacuumAttack.OnEnter += VacuumAttack_OnEnter;
       On.EntityStates.VoidRaidCrab.BaseSpinBeamAttackState.OnEnter += BaseSpinBeamAttackState_OnEnter;
+      On.EntityStates.EntityState.OnExit += SwapSecondaryOnExit;
       On.EntityStates.VoidRaidCrab.ChargeGauntlet.OnEnter += ChargeGauntlet_OnEnter;
       On.EntityStates.VoidRaidCrab.ChargeWardWipe.OnEnter += ChargeWardWipe_OnEnter;
       On.EntityStates.VoidRaidCrab.ChargeFinalStand.OnEnter += ChargeFinalStand_OnEnter;
       On.EntityStates.VoidRaidCrab.DeathState.OnEnter += DeathState_OnEnter;
       On.EntityStates.VoidRaidCrab.DeathState.OnExit += DeathState_OnExit;
+      On.RoR2.VoidRaidCrab.LegController.CompleteBreakAuthority += ChangeSecondaryOnBreak;
+    }
+
+    private void SwapSecondaryOnExit(On.EntityStates.EntityState.orig_OnExit orig, EntityStates.EntityState self)
+    {
+      if (self is FireWardWipe)
+      {
+        self.characterBody.skillLocator.secondary.SetSkillOverride(self.gameObject, secondaryDef, GenericSkill.SkillOverridePriority.Replacement);
+        self.characterBody.skillLocator.secondary.RemoveAllStocks();
+      }
+      orig(self);
+    }
+
+    private void ChangeSecondaryOnBreak(On.RoR2.VoidRaidCrab.LegController.orig_CompleteBreakAuthority orig, RoR2.VoidRaidCrab.LegController self)
+    {
+      if (self.mainBody)
+      {
+        float damage = self.jointBody.healthComponent.fullCombinedHealth;
+        float healthAfterDamage = self.mainBody.healthComponent.health - damage;
+        if (healthAfterDamage == self.mainBody.healthComponent.fullCombinedHealth * 0.66f)
+        {
+          self.mainBody.skillLocator.secondary.SetSkillOverride(self.gameObject, gauntletDef, GenericSkill.SkillOverridePriority.Replacement);
+          self.mainBody.skillLocator.secondary.stock = self.mainBody.skillLocator.secondary.maxStock;
+        }
+      }
+      orig(self);
     }
 
     public static void CreateTube()

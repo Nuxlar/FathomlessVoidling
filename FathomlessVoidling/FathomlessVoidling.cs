@@ -137,7 +137,6 @@ namespace FathomlessVoidling
       voidling.GetComponent<SkillLocator>().secondary.skillFamily.variants[0].skillDef = secondaryDef;
       voidling.GetComponent<SkillLocator>().utility.skillFamily.variants[0].skillDef = utilityDef;
 
-      voidling.GetComponent<CharacterDirection>().turnSpeed = 0.5f;
       GameObject model = voidling.GetComponent<ModelLocator>().modelTransform.gameObject;
       model.AddComponent<PrintController>();
 

@@ -15,6 +15,9 @@ using R2API.Utils;
 using RoR2.Projectile;
 using RoR2.CharacterAI;
 using RoR2.Skills;
+using HarmonyLib;
+using MonoMod.RuntimeDetour;
+using System.Diagnostics;
 
 namespace FathomlessVoidling
 {
@@ -82,30 +85,10 @@ namespace FathomlessVoidling
         }
       }
 
-      StriderLegController miniSLC = miniVoidling.GetComponent<ModelLocator>().modelTransform.gameObject.GetComponent<StriderLegController>();
-
-      Destroy(voidling.GetComponent<ModelLocator>().modelTransform.gameObject.GetComponent<CentralLegControllerAnimationEventReceiver>());
-      // Destroy(voidling.GetComponent<CentralLegController>());
-      Destroy(voidling.GetComponent<AimTurnStateController>());
-
       Transform modelTransform = voidling.GetComponent<ModelLocator>().modelTransform;
-
-      StriderLegController striderLegController = modelTransform.gameObject.AddComponent<StriderLegController>();
-      striderLegController.centerOfGravity = voidling.GetComponent<ModelLocator>().modelTransform;
-      striderLegController.footDampTime = 0.2f;
-      striderLegController.footMoveString = "";
-      striderLegController.footPlantEffect = stepEffect;
-      striderLegController.footPlantString = "Play_voidRaid_step";
-      striderLegController.footRaycastFrequency = 15;
-      striderLegController.maxFeetReplantingAtOnce = 2;
-      striderLegController.maxRaycastDistance = 200;
-      striderLegController.overstepDistance = 21;
-      striderLegController.raycastVerticalOffset = 30;
-      striderLegController.replantDuration = 0.4f;
-      striderLegController.replantHeight = 40;
-      striderLegController.stabilityRadius = 40;
-      // striderLegController.footRaycastDirection = new Vector3(0f, -0.6f, -1.02f);
-      striderLegController.lerpCurve = miniSLC.lerpCurve;
+      Animator animator = modelTransform.gameObject.GetComponent<Animator>();
+      animator.applyRootMotion = true;
+      animator.avatar = AvatarBuilder.BuildGenericAvatar(animator.gameObject, "ROOT");
 
       voidRainPortalEffect.transform.localScale /= 2;
 
@@ -327,45 +310,7 @@ namespace FathomlessVoidling
     private void VoidRaidCrab_SpawnState(On.EntityStates.VoidRaidCrab.SpawnState.orig_OnEnter orig, SpawnState self)
     {
       if (self.characterBody.name == "VoidRaidCrabBody(Clone)")
-      {
-        Transform modelTransform = self.GetModelTransform();
-
-        modelTransform.gameObject.GetComponent<StriderLegController>().feet = new StriderLegController.FootInfo[6]
-  {
-        new StriderLegController.FootInfo()
-        {
-          // backleg L
-          referenceTransform = modelTransform.GetChild(0).GetChild(0),
-          transform = modelTransform.GetChild(0).GetChild(6).GetChild(5).GetChild(0)
-        },
-        new StriderLegController.FootInfo()
-        {
-          referenceTransform = modelTransform.GetChild(0).GetChild(1),
-          transform = modelTransform.GetChild(0).GetChild(6).GetChild(5).GetChild(1)
-        },
-        new StriderLegController.FootInfo()
-        {
-          referenceTransform = modelTransform.GetChild(0).GetChild(2),
-          transform = modelTransform.GetChild(0).GetChild(6).GetChild(5).GetChild(2)
-        },
-        new StriderLegController.FootInfo()
-        {
-          referenceTransform =modelTransform.GetChild(0).GetChild(3),
-          transform = modelTransform.GetChild(0).GetChild(6).GetChild(5).GetChild(3)
-        },
-        new StriderLegController.FootInfo()
-        {
-          referenceTransform = modelTransform.GetChild(0).GetChild(4),
-          transform =modelTransform.GetChild(0).GetChild(6).GetChild(5).GetChild(4)
-        },
-        new StriderLegController.FootInfo()
-        {
-          referenceTransform = modelTransform.GetChild(0).GetChild(5),
-          transform = modelTransform.GetChild(0).GetChild(6).GetChild(5).GetChild(5)
-        }
-  };
         self.outer.SetState(new BetterSpawnState());
-      }
       else
         orig(self);
     }

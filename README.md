@@ -10,14 +10,14 @@
 ### Phase 2
 
 - Primary: Void Missiles - Same
-- Secondary: Void Rain - More lasers and faster
+- Secondary: Void Rain - More lasers
 - Utility:
-- Special: Gravity Well - Pulls in surrounding planetary debris
+- Special:
 
 ### Phase 3
 
 - Primary: Void Missiles - Same
-- Secondary: Void Rain - More lasers and faster
+- Secondary: Void Rain - More lasers
 - Utility:
 - Special:
 

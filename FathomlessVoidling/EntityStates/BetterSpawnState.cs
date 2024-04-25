@@ -29,7 +29,7 @@ namespace FathomlessVoidling
     public override void OnEnter()
     {
       base.OnEnter();
-      int num = (int)Util.PlaySound(this.spawnSoundString, GameObject.Find("SpawnCamera"));
+      Util.PlaySound(this.spawnSoundString, GameObject.Find("SpawnCamera"));
       if ((bool)(Object)this.spawnEffectPrefab)
         EffectManager.SpawnEffect(this.spawnEffectPrefab, new EffectData() { origin = new Vector3(0, -60, 0), scale = 2, rotation = Quaternion.identity }, true);
       if (!this.doLegs || !NetworkServer.active)

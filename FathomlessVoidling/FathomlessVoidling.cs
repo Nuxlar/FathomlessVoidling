@@ -28,6 +28,7 @@ namespace FathomlessVoidling
     public static GameObject spawnEffect = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabSpawnEffect.prefab").WaitForCompletion();
     public static CharacterSpawnCard jointCard = Addressables.LoadAssetAsync<CharacterSpawnCard>("RoR2/DLC1/VoidRaidCrab/cscVoidRaidCrabJoint.asset").WaitForCompletion();
     public static GameObject voidRainPortalEffect = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidMegaCrab/VoidMegaCrabSpawnEffect.prefab").WaitForCompletion(), "VoidRainPortalEffect");
+    public static GameObject laserPortalEffect = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidMegaCrab/VoidMegaCrabSpawnEffect.prefab").WaitForCompletion(), "LaserPortalEffect");
     GameEndingDef voidEnding = Addressables.LoadAssetAsync<GameEndingDef>("RoR2/Base/WeeklyRun/PrismaticTrialEnding.asset").WaitForCompletion();
     GameObject voidling = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabBody.prefab").WaitForCompletion();
     GameObject miniVoidling = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/MiniVoidRaidCrabBodyPhase1.prefab").WaitForCompletion();
@@ -50,6 +51,12 @@ namespace FathomlessVoidling
 
     public void Awake()
     {
+      laserPortalEffect.GetComponent<DestroyOnTimer>().duration = 6f;
+      foreach (ParticleSystem ps in laserPortalEffect.GetComponentsInChildren<ParticleSystem>())
+      {
+        var mainModule = ps.main;
+        mainModule.startLifetimeMultiplier *= 3f;
+      }
       foreach (AISkillDriver skillDriver in voidlingMaster.GetComponent<CharacterMaster>().GetComponents<AISkillDriver>())
       {
         switch (skillDriver.customName)
@@ -93,9 +100,11 @@ namespace FathomlessVoidling
       voidRainPortalEffect.transform.localScale /= 2;
 
       ContentAddition.AddEffect(voidRainPortalEffect);
+      ContentAddition.AddEffect(laserPortalEffect);
 
       ContentAddition.AddEntityState<ChargeVoidRain>(out _);
       ContentAddition.AddEntityState<FireVoidRain>(out _);
+      ContentAddition.AddEntityState<ChargeLaserBlast>(out _);
       ContentAddition.AddEntityState<BetterSpawnState>(out _);
       ContentAddition.AddEntityState<BetterCollapse>(out _);
       ContentAddition.AddEntityState<BetterReEmerge>(out _);
@@ -134,6 +143,8 @@ namespace FathomlessVoidling
       secondaryDef.baseRechargeInterval = 20f;
       secondaryDef.activationState = new SerializableEntityStateType(typeof(ChargeVoidRain));
 
+      voidling.GetComponent<SkillLocator>().primary.skillFamily.variants[0].skillDef.activationState = new SerializableEntityStateType(typeof(ChargeLaserBlast));
+      voidling.GetComponent<SkillLocator>().primary.skillFamily.variants[0].skillDef.baseMaxStock = 1;
       voidling.GetComponent<SkillLocator>().secondary.skillFamily.variants[0].skillDef = secondaryDef;
       voidling.GetComponent<SkillLocator>().utility.skillFamily.variants[0].skillDef = utilityDef;
 
@@ -172,10 +183,15 @@ namespace FathomlessVoidling
       {
         float damage = self.jointBody.healthComponent.fullCombinedHealth;
         float healthAfterDamage = self.mainBody.healthComponent.health - damage;
-        if (healthAfterDamage == self.mainBody.healthComponent.fullCombinedHealth * 0.66f)
+        PhasedInventorySetter inventorySetter = self.mainBody.GetComponent<PhasedInventorySetter>();
+        if (healthAfterDamage <= self.mainBody.healthComponent.fullCombinedHealth * 0.66f && inventorySetter && inventorySetter.phaseIndex == 0)
         {
-          self.mainBody.skillLocator.secondary.SetSkillOverride(self.gameObject, gauntletDef, GenericSkill.SkillOverridePriority.Replacement);
-          self.mainBody.skillLocator.secondary.stock = self.mainBody.skillLocator.secondary.maxStock;
+          if (self.mainBody.skillLocator.secondary.skillDef == secondaryDef)
+          {
+            UnityEngine.Debug.LogWarning("Swapping secondary skill");
+            self.mainBody.skillLocator.secondary.SetSkillOverride(self.gameObject, gauntletDef, GenericSkill.SkillOverridePriority.Replacement);
+            self.mainBody.skillLocator.secondary.stock = self.mainBody.skillLocator.secondary.maxStock;
+          }
         }
       }
       orig(self);

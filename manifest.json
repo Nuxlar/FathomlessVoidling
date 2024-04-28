@@ -2,6 +2,6 @@
   "name": "FathomlessVoidling",
   "version_number": "1.0.0",
   "website_url": "",
-  "description": "1.0 UPDATE WITH ORIGINAL VOIDLING. Reworks the Voidling fight.",
+  "description": "1.0 UPDATE. Reworks the Voidling fight.",
   "dependencies": ["RiskofThunder-R2API_ContentManagement-1.0.2"]
 }

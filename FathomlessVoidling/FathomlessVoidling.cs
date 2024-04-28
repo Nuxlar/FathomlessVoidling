@@ -18,6 +18,7 @@ using RoR2.Skills;
 using HarmonyLib;
 using MonoMod.RuntimeDetour;
 using System.Diagnostics;
+using RoR2.Audio;
 
 namespace FathomlessVoidling
 {
@@ -49,11 +50,53 @@ namespace FathomlessVoidling
     private static SkillDef gauntletDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidRaidCrab/RaidCrabChannelGauntlet.asset").WaitForCompletion();
     public static GameObject suckSphereEffect = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/KillSphereVfxPlaceholder.prefab").WaitForCompletion(), "WSingularitySphere");
     public static GameObject suckCenterEffect = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabSuckLoopFX.prefab").WaitForCompletion(), "WSingularityCenter");
+    public static GameObject wSingularityProjectile = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabMissileProjectile.prefab").WaitForCompletion(), "WSingularityProjectile");
+    public static GameObject wSingularityGhost = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/Base/LunarWisp/LunarWispTrackingBombGhost.prefab").WaitForCompletion(), "WSingularityGhost");
+    public static LoopSoundDef singularityLSD = Addressables.LoadAssetAsync<LoopSoundDef>("RoR2/DLC1/VoidRaidCrab/lsdVoidRaidCrabVacuumAttack.asset").WaitForCompletion();
 
     public void Awake()
     {
       Destroy(suckSphereEffect.GetComponent<VFXHelper.VFXTransformController>());
       Destroy(suckCenterEffect.GetComponent<VFXHelper.VFXTransformController>());
+      suckSphereEffect.transform.localScale = new Vector3(20f, 20f, 20f);
+
+      foreach (Transform child in wSingularityGhost.transform)
+      {
+        Destroy(child.gameObject);
+      }
+
+      suckCenterEffect.transform.parent = wSingularityGhost.transform;
+      suckSphereEffect.transform.parent = wSingularityGhost.transform;
+      suckCenterEffect.GetComponent<VFXAttributes>().vfxIntensity = VFXAttributes.VFXIntensity.Low;
+      suckSphereEffect.GetComponent<VFXAttributes>().vfxIntensity = VFXAttributes.VFXIntensity.Low;
+
+      foreach (Transform child in wSingularityProjectile.transform)
+      {
+        Destroy(child.gameObject);
+      }
+      Destroy(wSingularityProjectile.GetComponent<BoxCollider>());
+      Destroy(wSingularityProjectile.GetComponent<ProjectileSingleTargetImpact>());
+      wSingularityProjectile.AddComponent<SingularityKillComponent>();
+      SphereCollider sphereCollider = wSingularityProjectile.AddComponent<SphereCollider>();
+      sphereCollider.radius = 19f;
+      sphereCollider.isTrigger = true;
+      wSingularityProjectile.GetComponent<Rigidbody>().useGravity = false;
+      // wSingularityProjectile.GetComponent<ProjectileSingleTargetImpact>().destroyOnWorld = false;
+      ProjectileDirectionalTargetFinder targetFinder = wSingularityProjectile.GetComponent<ProjectileDirectionalTargetFinder>();
+      targetFinder.allowTargetLoss = false;
+      targetFinder.lookCone = 360f;
+      targetFinder.lookRange = 1000f;
+      ProjectileController projectileController = wSingularityProjectile.GetComponent<ProjectileController>();
+      projectileController.ghostPrefab = wSingularityGhost;
+      projectileController.cannotBeDeleted = true;
+      projectileController.flightSoundLoop = singularityLSD;
+      projectileController.myColliders = new Collider[1] { sphereCollider };
+      ProjectileSimple projectileSimple = wSingularityProjectile.GetComponent<ProjectileSimple>();
+      projectileSimple.desiredForwardSpeed = 10f;
+      projectileSimple.lifetime = 30f;
+      wSingularityProjectile.transform.localScale = Vector3.one;
+
+      ContentAddition.AddProjectile(wSingularityProjectile);
 
       laserPortalEffect.GetComponent<DestroyOnTimer>().duration = 6f;
       foreach (ParticleSystem ps in laserPortalEffect.GetComponentsInChildren<ParticleSystem>())
@@ -109,13 +152,14 @@ namespace FathomlessVoidling
       ContentAddition.AddEntityState<ChargeVoidRain>(out _);
       ContentAddition.AddEntityState<FireVoidRain>(out _);
       ContentAddition.AddEntityState<PortalBlast>(out _);
+      ContentAddition.AddEntityState<WanderingSingularity>(out _);
       ContentAddition.AddEntityState<BetterSpawnState>(out _);
       ContentAddition.AddEntityState<BetterCollapse>(out _);
       ContentAddition.AddEntityState<BetterReEmerge>(out _);
 
       spinBeamVFX.transform.localScale *= 2;
-      voidling.GetComponent<CharacterBody>().baseMaxHealth = 4000f;
-      voidling.GetComponent<CharacterBody>().levelMaxHealth = 1200;
+      voidling.GetComponent<CharacterBody>().baseMaxHealth = 2700f;
+      voidling.GetComponent<CharacterBody>().levelMaxHealth = 800;
       voidling.GetComponent<CharacterBody>().baseArmor = 40;
 
       joint.GetComponent<CharacterBody>().baseMaxHealth = 650f;
@@ -147,7 +191,7 @@ namespace FathomlessVoidling
       secondaryDef.baseRechargeInterval = 20f;
       secondaryDef.activationState = new SerializableEntityStateType(typeof(ChargeVoidRain));
 
-      voidling.GetComponent<SkillLocator>().primary.skillFamily.variants[0].skillDef.activationState = new SerializableEntityStateType(typeof(PortalBlast));
+      voidling.GetComponent<SkillLocator>().primary.skillFamily.variants[0].skillDef.activationState = new SerializableEntityStateType(typeof(WanderingSingularity));
       voidling.GetComponent<SkillLocator>().primary.skillFamily.variants[0].skillDef.baseMaxStock = 1;
       voidling.GetComponent<SkillLocator>().secondary.skillFamily.variants[0].skillDef = secondaryDef;
       voidling.GetComponent<SkillLocator>().utility.skillFamily.variants[0].skillDef = utilityDef;

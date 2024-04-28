@@ -43,14 +43,18 @@ namespace FathomlessVoidling
     public static GameObject voidRainWarning = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/MultiBeamRayIndicator.prefab").WaitForCompletion();
     public static GameObject voidRainTracer = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/TracerVoidRaidCrabTripleBeamSmall.prefab").WaitForCompletion();
     public static GameObject voidRainExplosion = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabTripleBeamExplosion.prefab").WaitForCompletion();
-    private static GameObject stepEffect = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabStep.prefab").WaitForCompletion();
     private static GameObject voidlingMaster = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabMaster.prefab").WaitForCompletion();
     private static SkillDef secondaryDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidRaidCrab/RaidCrabMultiBeam.asset").WaitForCompletion();
     private static SkillDef utilityDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidRaidCrab/RaidCrabSpinBeam.asset").WaitForCompletion();
     private static SkillDef gauntletDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidRaidCrab/RaidCrabChannelGauntlet.asset").WaitForCompletion();
+    public static GameObject suckSphereEffect = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/KillSphereVfxPlaceholder.prefab").WaitForCompletion(), "WSingularitySphere");
+    public static GameObject suckCenterEffect = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabSuckLoopFX.prefab").WaitForCompletion(), "WSingularityCenter");
 
     public void Awake()
     {
+      Destroy(suckSphereEffect.GetComponent<VFXHelper.VFXTransformController>());
+      Destroy(suckCenterEffect.GetComponent<VFXHelper.VFXTransformController>());
+
       laserPortalEffect.GetComponent<DestroyOnTimer>().duration = 6f;
       foreach (ParticleSystem ps in laserPortalEffect.GetComponentsInChildren<ParticleSystem>())
       {
@@ -104,7 +108,7 @@ namespace FathomlessVoidling
 
       ContentAddition.AddEntityState<ChargeVoidRain>(out _);
       ContentAddition.AddEntityState<FireVoidRain>(out _);
-      ContentAddition.AddEntityState<ChargeLaserBlast>(out _);
+      ContentAddition.AddEntityState<PortalBlast>(out _);
       ContentAddition.AddEntityState<BetterSpawnState>(out _);
       ContentAddition.AddEntityState<BetterCollapse>(out _);
       ContentAddition.AddEntityState<BetterReEmerge>(out _);
@@ -143,7 +147,7 @@ namespace FathomlessVoidling
       secondaryDef.baseRechargeInterval = 20f;
       secondaryDef.activationState = new SerializableEntityStateType(typeof(ChargeVoidRain));
 
-      voidling.GetComponent<SkillLocator>().primary.skillFamily.variants[0].skillDef.activationState = new SerializableEntityStateType(typeof(ChargeLaserBlast));
+      voidling.GetComponent<SkillLocator>().primary.skillFamily.variants[0].skillDef.activationState = new SerializableEntityStateType(typeof(PortalBlast));
       voidling.GetComponent<SkillLocator>().primary.skillFamily.variants[0].skillDef.baseMaxStock = 1;
       voidling.GetComponent<SkillLocator>().secondary.skillFamily.variants[0].skillDef = secondaryDef;
       voidling.GetComponent<SkillLocator>().utility.skillFamily.variants[0].skillDef = utilityDef;

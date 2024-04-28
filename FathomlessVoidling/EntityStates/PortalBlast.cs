@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace FathomlessVoidling
 {
-    public class ChargeLaserBlast : BaseState
+    public class PortalBlast : BaseState
     {
         public static LoopSoundDef loopSoundDef;
 
@@ -25,17 +25,15 @@ namespace FathomlessVoidling
         public float beamTickTimer = 0f;
         public float beamDpsCoefficient = 4f;
         private float stopwatch = 0f;
-        private Vector3 aimDirection;
-        private Vector3 startDirection;
-        private float lerpTime = 0f;
-        private bool hasTurned = false;
         private Transform muzzleTransform;
         private Transform portalTransform;
         private Ray portalRay;
+        private Ray initialRay;
 
         public override void OnEnter()
         {
             base.OnEnter();
+            this.initialRay = GetAimRay();
             this.muzzleTransform = this.FindModelChild(BaseMultiBeamState.muzzleName);
             duration = baseDuration + windUpDuration;
             BullseyeSearch search = new BullseyeSearch();
@@ -92,16 +90,13 @@ namespace FathomlessVoidling
             Util.PlaySound(SpinBeamWindUp.enterSoundString, this.gameObject);
         }
 
-        private void Cunt()
-        {
-
-        }
-
         public override void FixedUpdate()
         {
             base.FixedUpdate();
 
             stopwatch += Time.fixedDeltaTime;
+
+            this.inputBank.aimDirection = portalRay.direction;
 
             if (isAuthority)
             {
@@ -113,18 +108,22 @@ namespace FathomlessVoidling
                     this.loopPtr = LoopSoundManager.PlaySoundLoopLocal(this.gameObject, SpinBeamAttack.loopSound);
                     Util.PlaySound(SpinBeamAttack.enterSoundString, this.gameObject);
                 }
+
                 if (beamTickTimer <= 0f && woundUp)
                 {
                     beamTickTimer += 1f / SpinBeamAttack.beamTickFrequency;
                     FireBeamBulletAuthority();
                 }
+
                 beamTickTimer -= Time.fixedDeltaTime;
+
+                if (fixedAge >= duration)
+                {
+                    this.BeginWindDown();
+                    outer.SetNextStateToMain();
+                }
             }
-            if (isAuthority && fixedAge >= duration)
-            {
-                this.BeginWindDown();
-                outer.SetNextStateToMain();
-            }
+
         }
 
         public void FireBeamBulletAuthority()

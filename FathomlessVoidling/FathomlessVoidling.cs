@@ -45,17 +45,102 @@ namespace FathomlessVoidling
     public static GameObject voidRainTracer = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/TracerVoidRaidCrabTripleBeamSmall.prefab").WaitForCompletion();
     public static GameObject voidRainExplosion = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabTripleBeamExplosion.prefab").WaitForCompletion();
     private static GameObject voidlingMaster = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabMaster.prefab").WaitForCompletion();
+    private static SkillDef primaryDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidRaidCrab/RaidCrabEyeMissiles.asset").WaitForCompletion();
     private static SkillDef secondaryDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidRaidCrab/RaidCrabMultiBeam.asset").WaitForCompletion();
     private static SkillDef utilityDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidRaidCrab/RaidCrabSpinBeam.asset").WaitForCompletion();
+    private static SkillDef specialDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidRaidCrab/RaidCrabVacuumAttack.asset").WaitForCompletion();
     private static SkillDef gauntletDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidRaidCrab/RaidCrabChannelGauntlet.asset").WaitForCompletion();
     public static GameObject suckSphereEffect = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/KillSphereVfxPlaceholder.prefab").WaitForCompletion(), "WSingularitySphere");
     public static GameObject suckCenterEffect = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabSuckLoopFX.prefab").WaitForCompletion(), "WSingularityCenter");
     public static GameObject wSingularityProjectile = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabMissileProjectile.prefab").WaitForCompletion(), "WSingularityProjectile");
     public static GameObject wSingularityGhost = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/Base/LunarWisp/LunarWispTrackingBombGhost.prefab").WaitForCompletion(), "WSingularityGhost");
     public static LoopSoundDef singularityLSD = Addressables.LoadAssetAsync<LoopSoundDef>("RoR2/DLC1/VoidRaidCrab/lsdVoidRaidCrabVacuumAttack.asset").WaitForCompletion();
-
+    public static GameObject voidEyeModel = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabBody.prefab").WaitForCompletion().GetComponent<ModelLocator>().modelTransform.GetChild(4).gameObject, "mdlVoidEye");
+    public static GameObject voidEye = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/Base/ArtifactShell/ArtifactShellBody.prefab").WaitForCompletion(), "VoidEyeBody");
+    public static GameObject voidEyeMaster = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/Base/ArtifactShell/ArtifactShellMaster.prefab").WaitForCompletion(), "VoidEyeMaster");
+    public static Material voidEyeMat = Addressables.LoadAssetAsync<Material>("RoR2/DLC1/VoidRaidCrab/matVoidRaidCrabEye.mat").WaitForCompletion();
+    public static Material voidEyeMat2 = Addressables.LoadAssetAsync<Material>("RoR2/DLC1/VoidRaidCrab/matVoidRaidCrabEyeOverlay1.mat").WaitForCompletion();
+    public static Material voidEyeMat3 = Addressables.LoadAssetAsync<Material>("RoR2/DLC1/VoidRaidCrab/matVoidRaidCrabEyeOverlay2.mat").WaitForCompletion();
+    public static Material voidEyeMat4 = Addressables.LoadAssetAsync<Material>("RoR2/DLC1/VoidRaidCrab/matVoidRaidCrabEyeOverlay3.mat").WaitForCompletion();
+    public static GameObject meteor = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Grandparent/GrandparentBoulder.prefab").WaitForCompletion(), "VoidMeteor");
+    private static GameObject meteorGhost = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Grandparent/GrandparentBoulderGhost.prefab").WaitForCompletion(), "VoidMeteorGhost");
+    private static Material boulderMat = Addressables.LoadAssetAsync<Material>((object)"RoR2/Base/Grandparent/matGrandparentBoulderProjectile.mat").WaitForCompletion();
+    private static Material voidAffixMat = Addressables.LoadAssetAsync<Material>((object)"RoR2/DLC1/EliteVoid/matEliteVoidOverlay.mat").WaitForCompletion();
+    private bool shouldGauntlet = false;
+    private static SkillDef finalStandDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidRaidCrab/RaidCrabFinalStand.asset").WaitForCompletion();
     public void Awake()
     {
+      /*
+      Destroy(voidEye.GetComponent<PurchaseInteraction>());
+      Destroy(voidEye.GetComponent<Highlight>());
+      ModelLocator modelLocator = voidEye.GetComponent<ModelLocator>();
+      modelLocator.modelTransform.GetChild(2).localScale = new Vector3(32f, 32f, 32f);
+      modelLocator.modelTransform.GetChild(2).gameObject.GetComponent<MeshRenderer>().sharedMaterials = new Material[] { voidEyeMat2, voidEyeMat3, voidEyeMat4, voidEyeMat };
+      modelLocator.modelTransform.GetChild(3).gameObject.SetActive(false);
+      Destroy(modelLocator.modelTransform.gameObject.GetComponent<SurfaceDefProvider>());
+      modelLocator.modelTransform.gameObject.GetComponent<SphereCollider>().radius = 20f;
+      HurtBoxGroup hbxGroup = modelLocator.modelTransform.gameObject.AddComponent<HurtBoxGroup>();
+      HurtBox mainHurtbox = modelLocator.modelTransform.gameObject.AddComponent<HurtBox>();
+      mainHurtbox.gameObject.layer = LayerIndex.entityPrecise.intVal;
+      mainHurtbox.healthComponent = voidEye.GetComponent<HealthComponent>();
+      mainHurtbox.isBullseye = true;
+      mainHurtbox.isSniperTarget = false;
+      mainHurtbox.damageModifier = HurtBox.DamageModifier.Normal;
+      mainHurtbox.hurtBoxGroup = hbxGroup;
+      mainHurtbox.indexInGroup = 0;
+      hbxGroup.hurtBoxes = new HurtBox[]
+                {
+                    mainHurtbox,
+                };
+      hbxGroup.mainHurtBox = mainHurtbox;
+      hbxGroup.bullseyeCount = 1;
+      
+      SkillDef eyeSkill = voidEye.GetComponent<SkillLocator>().primary.skillFamily.variants[0].skillDef;
+      eyeSkill.activationState = new SerializableEntityStateType(typeof(EyeBlast));
+      eyeSkill.baseRechargeInterval = 20f;
+
+      CharacterBody eyeBody = voidEye.GetComponent<CharacterBody>();
+      eyeBody.baseNameToken = "Void Eye";
+      eyeBody.baseMaxHealth = 1000f;
+      eyeBody.levelMaxHealth = 300f;
+      eyeBody.baseRegen = 0f;
+      eyeBody.levelRegen = 0f;
+      eyeBody.baseArmor = 10f;
+      eyeBody.levelArmor = 0f;
+      eyeBody.baseMoveSpeed = 0f;
+      eyeBody.levelMoveSpeed = 0f;
+
+      voidEye.GetComponents<EntityStateMachine>().Where(machine => machine.customName == "Life").First().initialStateType = new SerializableEntityStateType(typeof(VoidEyeSpawn));
+      AISkillDriver eyeSkillDriver = voidEyeMaster.GetComponents<AISkillDriver>().Where(driver => driver.skillSlot == SkillSlot.Primary).First();
+      eyeSkillDriver.requireSkillReady = true;
+      eyeSkillDriver.maxUserHealthFraction = 1f;
+
+      voidEyeMaster.GetComponent<CharacterMaster>().bodyPrefab = voidEye;
+
+      ContentAddition.AddBody(voidEye);
+      ContentAddition.AddMaster(voidEyeMaster);
+      */
+      ProjectileController component = meteor.GetComponent<ProjectileController>();
+      component.cannotBeDeleted = true;
+      meteor.transform.localScale = new Vector3(1.75f, 1.75f, 1.75f);
+      meteorGhost.transform.localScale = new Vector3(2f, 2f, 2f);
+      meteorGhost.transform.GetChild(0).GetChild(0).GetComponent<MeshRenderer>().materials = new Material[2]
+      {
+        boulderMat,
+        voidAffixMat
+      };
+      component.ghost = meteorGhost.GetComponent<ProjectileGhostController>();
+      component.ghostPrefab = meteorGhost;
+      ProjectileSimple projectileSimple1 = meteor.GetComponent<ProjectileSimple>();
+      projectileSimple1.desiredForwardSpeed = 0f;
+      projectileSimple1.lifetime = 15f;
+      meteor.GetComponent<Rigidbody>().useGravity = false;
+      meteor.AddComponent<ProjectileTargetComponent>();
+      meteor.AddComponent<ProjectileDirectionalTargetFinder>();
+      meteor.AddComponent<ProjectileSteerTowardTarget>();
+      meteor.AddComponent<DelayedProjectileFire>();
+      ContentAddition.AddProjectile(meteor);
+
       Destroy(suckSphereEffect.GetComponent<VFXHelper.VFXTransformController>());
       Destroy(suckCenterEffect.GetComponent<VFXHelper.VFXTransformController>());
       suckSphereEffect.transform.localScale = new Vector3(20f, 20f, 20f);
@@ -67,6 +152,7 @@ namespace FathomlessVoidling
 
       suckCenterEffect.transform.parent = wSingularityGhost.transform;
       suckSphereEffect.transform.parent = wSingularityGhost.transform;
+      suckSphereEffect.transform.GetChild(1).GetChild(1).gameObject.SetActive(false);
       suckCenterEffect.GetComponent<VFXAttributes>().vfxIntensity = VFXAttributes.VFXIntensity.Low;
       suckSphereEffect.GetComponent<VFXAttributes>().vfxIntensity = VFXAttributes.VFXIntensity.Low;
 
@@ -109,10 +195,12 @@ namespace FathomlessVoidling
         switch (skillDriver.customName)
         {
           case "Channel Gauntlet 1":
-            skillDriver.maxUserHealthFraction = 0.66f;
+            //skillDriver.maxUserHealthFraction = 0.66f;
+            skillDriver.requiredSkill = null;
             break;
           case "Channel Gauntlet 2":
-            skillDriver.maxUserHealthFraction = 0.33f;
+            // skillDriver.maxUserHealthFraction = 0.33f;
+            skillDriver.requiredSkill = null;
             break;
           case "FireMissiles":
             skillDriver.movementType = AISkillDriver.MovementType.ChaseMoveTarget;
@@ -151,6 +239,8 @@ namespace FathomlessVoidling
 
       ContentAddition.AddEntityState<ChargeVoidRain>(out _);
       ContentAddition.AddEntityState<FireVoidRain>(out _);
+      ContentAddition.AddEntityState<LaserBlast>(out _);
+      ContentAddition.AddEntityState<AsteroidBelt>(out _);
       ContentAddition.AddEntityState<PortalBlast>(out _);
       ContentAddition.AddEntityState<WanderingSingularity>(out _);
       ContentAddition.AddEntityState<BetterSpawnState>(out _);
@@ -158,12 +248,11 @@ namespace FathomlessVoidling
       ContentAddition.AddEntityState<BetterReEmerge>(out _);
 
       spinBeamVFX.transform.localScale *= 2;
-      voidling.GetComponent<CharacterBody>().baseMaxHealth = 2700f;
-      voidling.GetComponent<CharacterBody>().levelMaxHealth = 800;
+      voidling.GetComponent<CharacterBody>().baseMaxHealth = 4000f; // 8000
+      voidling.GetComponent<CharacterBody>().levelMaxHealth = 1200; // 2400
       voidling.GetComponent<CharacterBody>().baseArmor = 40;
-
-      joint.GetComponent<CharacterBody>().baseMaxHealth = 650f;
-      joint.GetComponent<CharacterBody>().levelMaxHealth = 500f;
+      joint.GetComponent<CharacterBody>().baseMaxHealth = 1000; // 1000
+      joint.GetComponent<CharacterBody>().levelMaxHealth = 300f; // 300
 
       spawnEffect.transform.localScale *= 2;
 
@@ -187,14 +276,16 @@ namespace FathomlessVoidling
       {
         child.localScale *= 4;
       }
-
+      gauntletDef.interruptPriority = InterruptPriority.PrioritySkill;
       secondaryDef.baseRechargeInterval = 20f;
       secondaryDef.activationState = new SerializableEntityStateType(typeof(ChargeVoidRain));
-
-      voidling.GetComponent<SkillLocator>().primary.skillFamily.variants[0].skillDef.activationState = new SerializableEntityStateType(typeof(WanderingSingularity));
-      voidling.GetComponent<SkillLocator>().primary.skillFamily.variants[0].skillDef.baseMaxStock = 1;
+      utilityDef.activationState = new SerializableEntityStateType(typeof(ChargeWardWipe));
+      utilityDef.interruptPriority = InterruptPriority.PrioritySkill;
+      // voidling.GetComponent<SkillLocator>().primary.skillFamily.variants[0].skillDef.activationState = new SerializableEntityStateType(typeof(AsteroidBelt));
+      // voidling.GetComponent<SkillLocator>().primary.skillFamily.variants[0].skillDef.baseMaxStock = 1;
       voidling.GetComponent<SkillLocator>().secondary.skillFamily.variants[0].skillDef = secondaryDef;
       voidling.GetComponent<SkillLocator>().utility.skillFamily.variants[0].skillDef = utilityDef;
+      voidling.GetComponent<SkillLocator>().special.skillFamily.variants[0].skillDef.interruptPriority = InterruptPriority.PrioritySkill;
 
       GameObject model = voidling.GetComponent<ModelLocator>().modelTransform.gameObject;
       model.AddComponent<PrintController>();
@@ -205,6 +296,7 @@ namespace FathomlessVoidling
       On.EntityStates.VoidRaidCrab.Collapse.OnEnter += Collapse_OnEnter;
       On.EntityStates.VoidRaidCrab.ReEmerge.OnEnter += ReEmerge_OnEnter;
       On.EntityStates.VoidRaidCrab.VacuumAttack.OnEnter += VacuumAttack_OnEnter;
+      On.EntityStates.VoidRaidCrab.BaseVacuumAttackState.OnEnter += ChangeStateOnPhases;
       On.EntityStates.VoidRaidCrab.BaseSpinBeamAttackState.OnEnter += BaseSpinBeamAttackState_OnEnter;
       On.EntityStates.EntityState.OnExit += SwapSecondaryOnExit;
       On.EntityStates.VoidRaidCrab.ChargeGauntlet.OnEnter += ChargeGauntlet_OnEnter;
@@ -212,36 +304,82 @@ namespace FathomlessVoidling
       On.EntityStates.VoidRaidCrab.ChargeFinalStand.OnEnter += ChargeFinalStand_OnEnter;
       On.EntityStates.VoidRaidCrab.DeathState.OnEnter += DeathState_OnEnter;
       On.EntityStates.VoidRaidCrab.DeathState.OnExit += DeathState_OnExit;
-      On.RoR2.VoidRaidCrab.LegController.CompleteBreakAuthority += ChangeSecondaryOnBreak;
+      //  On.RoR2.VoidRaidCrab.LegController.CompleteBreakAuthority += ChangeSecondaryOnBreak;
+      On.RoR2.VoidRaidCrab.VoidRaidCrabAISkillDriverController.ShouldUseGauntletSkills += SwapToGauntlet;
+      On.RoR2.VoidRaidCrab.VoidRaidCrabAISkillDriverController.ShouldUseFinalStandSkill += SwapToFinalStand;
+      On.EntityStates.VoidRaidCrab.ChargeWardWipe.GetMinimumInterruptPriority += IncreaseInterruptPriorityChargeWardWipe;
+      On.EntityStates.VoidRaidCrab.FireWardWipe.GetMinimumInterruptPriority += IncreaseInterruptPriorityFireWardWipe;
+    }
+
+    private InterruptPriority IncreaseInterruptPriorityFireWardWipe(On.EntityStates.VoidRaidCrab.FireWardWipe.orig_GetMinimumInterruptPriority orig, FireWardWipe self)
+    {
+      return InterruptPriority.Death;
+    }
+
+    private InterruptPriority IncreaseInterruptPriorityChargeWardWipe(On.EntityStates.VoidRaidCrab.ChargeWardWipe.orig_GetMinimumInterruptPriority orig, ChargeWardWipe self)
+    {
+      return InterruptPriority.Death;
+    }
+
+    private bool SwapToFinalStand(On.RoR2.VoidRaidCrab.VoidRaidCrabAISkillDriverController.orig_ShouldUseFinalStandSkill orig, VoidRaidCrabAISkillDriverController self)
+    {
+      bool shouldUseFinalStand = orig(self);
+      if (shouldUseFinalStand)
+      {
+        self.healthComponent.body.skillLocator.utility.SetSkillOverride(self.gameObject, finalStandDef, GenericSkill.SkillOverridePriority.Replacement);
+        self.healthComponent.body.skillLocator.utility.stock = self.healthComponent.body.skillLocator.utility.maxStock;
+      }
+      return shouldUseFinalStand;
+    }
+
+    private void ChangeStateOnPhases(On.EntityStates.VoidRaidCrab.BaseVacuumAttackState.orig_OnEnter orig, BaseVacuumAttackState self)
+    {
+      PhasedInventorySetter inventorySetter = self.characterBody.GetComponent<PhasedInventorySetter>();
+      if (inventorySetter)
+      {
+        if (inventorySetter.phaseIndex == 0)
+        {
+          orig(self);
+        }
+        if (inventorySetter.phaseIndex == 1)
+        {
+          self.outer.SetState(new WanderingSingularity());
+          return;
+        }
+        if (inventorySetter.phaseIndex == 2)
+        {
+          self.outer.SetState(new WanderingSingularity());
+          return;
+        }
+      }
+      else
+        orig(self);
+    }
+
+    private bool SwapToGauntlet(On.RoR2.VoidRaidCrab.VoidRaidCrabAISkillDriverController.orig_ShouldUseGauntletSkills orig, VoidRaidCrabAISkillDriverController self)
+    {
+      bool shouldUseGauntlet = orig(self);
+      if (shouldUseGauntlet)
+      {
+        if (self.healthComponent.body.skillLocator.secondary.skillDef != gauntletDef)
+        {
+          shouldGauntlet = true;
+          self.healthComponent.body.skillLocator.utility.SetSkillOverride(self.gameObject, gauntletDef, GenericSkill.SkillOverridePriority.Replacement);
+          self.healthComponent.body.skillLocator.utility.stock = self.healthComponent.body.skillLocator.utility.maxStock;
+        }
+      }
+      return shouldUseGauntlet;
     }
 
     private void SwapSecondaryOnExit(On.EntityStates.EntityState.orig_OnExit orig, EntityStates.EntityState self)
     {
       if (self is FireWardWipe)
       {
-        self.characterBody.skillLocator.secondary.SetSkillOverride(self.gameObject, secondaryDef, GenericSkill.SkillOverridePriority.Replacement);
-        self.characterBody.skillLocator.secondary.RemoveAllStocks();
+        shouldGauntlet = false;
+        self.characterBody.skillLocator.utility.SetSkillOverride(self.gameObject, utilityDef, GenericSkill.SkillOverridePriority.Replacement);
+        self.healthComponent.body.skillLocator.utility.stock = self.healthComponent.body.skillLocator.utility.maxStock;
       }
-      orig(self);
-    }
 
-    private void ChangeSecondaryOnBreak(On.RoR2.VoidRaidCrab.LegController.orig_CompleteBreakAuthority orig, RoR2.VoidRaidCrab.LegController self)
-    {
-      if (self.mainBody)
-      {
-        float damage = self.jointBody.healthComponent.fullCombinedHealth;
-        float healthAfterDamage = self.mainBody.healthComponent.health - damage;
-        PhasedInventorySetter inventorySetter = self.mainBody.GetComponent<PhasedInventorySetter>();
-        if (healthAfterDamage <= self.mainBody.healthComponent.fullCombinedHealth * 0.66f && inventorySetter && inventorySetter.phaseIndex == 0)
-        {
-          if (self.mainBody.skillLocator.secondary.skillDef == secondaryDef)
-          {
-            UnityEngine.Debug.LogWarning("Swapping secondary skill");
-            self.mainBody.skillLocator.secondary.SetSkillOverride(self.gameObject, gauntletDef, GenericSkill.SkillOverridePriority.Replacement);
-            self.mainBody.skillLocator.secondary.stock = self.mainBody.skillLocator.secondary.maxStock;
-          }
-        }
-      }
       orig(self);
     }
 
@@ -292,44 +430,74 @@ namespace FathomlessVoidling
 
     private void BaseSpinBeamAttackState_OnEnter(On.EntityStates.VoidRaidCrab.BaseSpinBeamAttackState.orig_OnEnter orig, BaseSpinBeamAttackState self)
     {
-      SpinBeamAttack.beamRadius = 32f;
-      self.headForwardYCurve = AnimationCurve.Linear(0, 0, 10, 0);
-      orig(self);
+      PhasedInventorySetter inventorySetter = self.characterBody.GetComponent<PhasedInventorySetter>();
+      if (inventorySetter)
+      {
+        if (inventorySetter.phaseIndex == 0)
+        {
+          SpinBeamAttack.beamRadius = 30f;
+          self.headForwardYCurve = AnimationCurve.Linear(0, 0, 10, 0);
+          orig(self);
+        }
+        if (inventorySetter.phaseIndex == 1)
+        {
+          self.outer.SetState(new LaserBlast());
+          return;
+        }
+        if (inventorySetter.phaseIndex == 2)
+        {
+          self.outer.SetState(new PortalBlast());
+          return;
+        }
+      }
+      else
+      {
+        SpinBeamAttack.beamRadius = 30f;
+        self.headForwardYCurve = AnimationCurve.Linear(0, 0, 10, 0);
+        orig(self);
+      }
     }
 
     private void DeathState_OnEnter(On.EntityStates.VoidRaidCrab.DeathState.orig_OnEnter orig, DeathState self)
     {
       // Body TrueDeath TrueDeath.playbackRate 5
-      self.animationStateName = "ChargeWipe";
-      self.animationPlaybackRateParam = "Wipe.playbackRate";
-      self.addPrintController = false;
-      orig(self);
-      PrintController printController = self.modelTransform.gameObject.AddComponent<PrintController>();
-      printController.printTime = self.printDuration;
-      printController.enabled = true;
-      printController.startingPrintHeight = 200f;
-      printController.maxPrintHeight = 500f;
-      printController.startingPrintBias = self.startingPrintBias;
-      printController.maxPrintBias = self.maxPrintBias;
-      printController.disableWhenFinished = false;
-      printController.printCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1f, 1f);
+      if (self.characterBody.name == "VoidRaidCrabBody(Clone)")
+      {
+        self.animationStateName = "ChargeWipe";
+        self.animationPlaybackRateParam = "Wipe.playbackRate";
+        self.addPrintController = false;
+        orig(self);
+        PrintController printController = self.modelTransform.gameObject.AddComponent<PrintController>();
+        printController.printTime = self.printDuration;
+        printController.enabled = true;
+        printController.startingPrintHeight = 200f;
+        printController.maxPrintHeight = 500f;
+        printController.startingPrintBias = self.startingPrintBias;
+        printController.maxPrintBias = self.maxPrintBias;
+        printController.disableWhenFinished = false;
+        printController.printCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1f, 1f);
+      }
+      else orig(self);
     }
 
     private void DeathState_OnExit(On.EntityStates.VoidRaidCrab.DeathState.orig_OnExit orig, DeathState self)
     {
       orig(self);
-      GameObject[] joints = GameObject.FindObjectsOfType<GameObject>().Where(go => go.name == "VoidRaidCrabJointBody(Clone)" || go.name == "VoidRaidCrabJointMaster(Clone)").ToArray();
-      foreach (GameObject joint in joints)
+      if (self.characterBody.name == "VoidRaidCrabBody(Clone)")
       {
-        if (NetworkServer.active)
-          NetworkServer.Destroy(joint);
-        else
-          Destroy(joint);
+        GameObject[] joints = GameObject.FindObjectsOfType<GameObject>().Where(go => go.name == "VoidRaidCrabJointBody(Clone)" || go.name == "VoidRaidCrabJointMaster(Clone)").ToArray();
+        foreach (GameObject joint in joints)
+        {
+          if (NetworkServer.active)
+            NetworkServer.Destroy(joint);
+          else
+            Destroy(joint);
+        }
+        Run.instance.BeginGameOver(voidEnding);
+        GameObject phases = GameObject.Find("EncounterPhases");
+        if (phases)
+          phases.transform.GetChild(0).GetChild(3).gameObject.SetActive(false);
       }
-      Run.instance.BeginGameOver(voidEnding);
-      GameObject phases = GameObject.Find("EncounterPhases");
-      if (phases)
-        phases.transform.GetChild(0).GetChild(3).gameObject.SetActive(false);
     }
 
     private void ChargeGauntlet_OnEnter(On.EntityStates.VoidRaidCrab.ChargeGauntlet.orig_OnEnter orig, ChargeGauntlet self)
@@ -339,17 +507,55 @@ namespace FathomlessVoidling
 
     private void ChargeWardWipe_OnEnter(On.EntityStates.VoidRaidCrab.ChargeWardWipe.orig_OnEnter orig, ChargeWardWipe self)
     {
-      orig(self);
-      PhasedInventorySetter component1 = self.GetComponent<PhasedInventorySetter>();
-      if ((bool)component1 && NetworkServer.active)
-        component1.AdvancePhase();
-      ChargeGauntlet gauntlet = new ChargeGauntlet();
-      if (!(bool)gauntlet.nextSkillDef)
-        return;
-      GenericSkill skillByDef = self.skillLocator.FindSkillByDef(gauntlet.skillDefToReplaceAtStocksEmpty);
-      if (!(bool)skillByDef || skillByDef.stock != 0)
-        return;
-      skillByDef.SetBaseSkill(gauntlet.nextSkillDef);
+      PhasedInventorySetter inventorySetter = self.characterBody.GetComponent<PhasedInventorySetter>();
+
+      if (inventorySetter)
+      {
+        if (this.shouldGauntlet)
+        {
+          orig(self);
+          PhasedInventorySetter component1 = self.GetComponent<PhasedInventorySetter>();
+          if ((bool)component1 && NetworkServer.active)
+            component1.AdvancePhase();
+          ChargeGauntlet gauntlet = new ChargeGauntlet();
+          if (!(bool)gauntlet.nextSkillDef)
+            return;
+          GenericSkill skillByDef = self.skillLocator.FindSkillByDef(gauntlet.skillDefToReplaceAtStocksEmpty);
+          if (!(bool)skillByDef || skillByDef.stock != 0)
+            return;
+          skillByDef.SetBaseSkill(gauntlet.nextSkillDef);
+        }
+        else
+        {
+          if (inventorySetter.phaseIndex == 0)
+          {
+            self.outer.SetState(new SpinBeamEnter());
+          }
+          if (inventorySetter.phaseIndex == 1)
+          {
+            self.outer.SetState(new LaserBlast());
+          }
+          if (inventorySetter.phaseIndex == 2)
+          {
+            self.outer.SetState(new PortalBlast());
+          }
+        }
+      }
+      else
+      {
+        orig(self);
+        PhasedInventorySetter component1 = self.GetComponent<PhasedInventorySetter>();
+        if ((bool)component1 && NetworkServer.active)
+          component1.AdvancePhase();
+        ChargeGauntlet gauntlet = new ChargeGauntlet();
+        if (!(bool)gauntlet.nextSkillDef)
+          return;
+        GenericSkill skillByDef = self.skillLocator.FindSkillByDef(gauntlet.skillDefToReplaceAtStocksEmpty);
+        if (!(bool)skillByDef || skillByDef.stock != 0)
+          return;
+        skillByDef.SetBaseSkill(gauntlet.nextSkillDef);
+      }
+
     }
 
     private void ChargeFinalStand_OnEnter(On.EntityStates.VoidRaidCrab.ChargeFinalStand.orig_OnEnter orig, ChargeFinalStand self)
@@ -383,6 +589,7 @@ namespace FathomlessVoidling
       orig(self);
       if (self.sceneDef.cachedName == "voidraid")
       {
+        shouldGauntlet = false;
         GameObject phases = GameObject.Find("EncounterPhases");
         Transform cam = GameObject.Find("RaidVoid").transform.GetChild(8);
         if (phases)

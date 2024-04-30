@@ -10,11 +10,11 @@ using System.Collections.Generic;
 
 namespace FathomlessVoidling
 {
-    public class PortalBlast : BaseState
+    public class LaserBlast : BaseState
     {
         public static LoopSoundDef loopSoundDef;
 
-        public float baseDuration = 3f;
+        public float baseDuration = 4f;
         public float duration;
         public float windUpDuration = 2f;
         public bool woundUp = false;
@@ -42,17 +42,7 @@ namespace FathomlessVoidling
             if ((bool)centralLegController)
                 this.suppressBreaksRequest = this.centralLegController.SuppressBreaks();
             duration = baseDuration + windUpDuration;
-            BullseyeSearch search = new BullseyeSearch();
 
-            search.teamMaskFilter = TeamMask.GetEnemyTeams(this.GetTeam());
-            search.filterByDistinctEntity = true;
-            search.viewer = null;
-            search.searchOrigin = Vector3.zero;
-            search.sortMode = BullseyeSearch.SortMode.DistanceAndAngle;
-            search.maxDistanceFilter = 2000f;
-            search.minAngleFilter = 0.0f;
-            search.maxAngleFilter = 360f;
-            search.RefreshCandidates();
             List<CharacterBody> playerBodies = new();
             foreach (CharacterMaster cm in UnityEngine.Object.FindObjectsOfType<CharacterMaster>())
             {
@@ -65,33 +55,19 @@ namespace FathomlessVoidling
             }
             CharacterBody victimBody = playerBodies[UnityEngine.Random.Range(0, playerBodies.Count)];
             Vector3 playerPos = victimBody.corePosition;
-            Vector3 center = playerPos - this.transform.position;
-            float radius = 30f;
-            Vector3 point = center + (Vector3)(radius * UnityEngine.Random.insideUnitCircle);
+
             Vector3 predictedPoint = Vector3.zero;
             Vector3 predictedDirection = Vector3.zero;
             if (victimBody.characterMotor)
             {
                 predictedPoint = playerPos + victimBody.characterMotor.velocity * 1f;
-                predictedDirection = (predictedPoint - point).normalized;
+                predictedDirection = (predictedPoint - this.muzzleTransform.position).normalized;
             }
-            Vector3 direction = (playerPos - point).normalized;
-            Ray projectileRay = predictedPoint == Vector3.zero ? new Ray(point, direction) : new Ray(point, predictedDirection);
-            EffectManager.SpawnEffect(FathomlessVoidling.laserPortalEffect, new EffectData()
-            {
-                origin = this.muzzleTransform.position,
-                rotation = Util.QuaternionSafeLookRotation(this.muzzleTransform.forward)
-            }, false);
-            GameObject projectile = new GameObject("LaserPortalBase");
-            projectile.transform.position = projectileRay.origin;
-            projectile.transform.rotation = Util.QuaternionSafeLookRotation(projectileRay.direction);
-            EffectManager.SpawnEffect(FathomlessVoidling.laserPortalEffect, new EffectData()
-            {
-                origin = projectile.transform.position,
-                rotation = projectile.transform.rotation
-            }, false);
-            this.portalTransform = projectile.transform;
-            this.portalRay = projectileRay;
+            Vector3 direction = (playerPos - this.muzzleTransform.position).normalized;
+            Ray projectileRay = predictedPoint == Vector3.zero ? new Ray(this.muzzleTransform.position, direction) : new Ray(this.muzzleTransform.position, predictedDirection);
+
+            this.initialRay = projectileRay;
+            this.inputBank.aimDirection = this.initialRay.direction;
             this.CreateBeamVFXInstance(SpinBeamWindUp.warningLaserPrefab);
             Util.PlaySound(SpinBeamWindUp.enterSoundString, this.gameObject);
         }
@@ -102,7 +78,7 @@ namespace FathomlessVoidling
 
             stopwatch += Time.fixedDeltaTime;
 
-            this.inputBank.aimDirection = portalRay.direction;
+            this.inputBank.aimDirection = this.initialRay.direction;
 
             if (isAuthority)
             {
@@ -142,11 +118,11 @@ namespace FathomlessVoidling
 
         public void FireBeamBulletAuthority()
         {
-            var beamRay = portalRay;
+            var beamRay = initialRay;
             new BulletAttack
             {
-                origin = beamRay.origin,
-                aimVector = beamRay.direction,
+                origin = initialRay.origin,
+                aimVector = initialRay.direction,
                 minSpread = 0f,
                 maxSpread = 0f,
                 maxDistance = 400f,
@@ -176,7 +152,7 @@ namespace FathomlessVoidling
             if (beamVfxInstance == null)
             {
                 beamVfxInstance = Object.Instantiate(beamVfxPrefab);
-                beamVfxInstance.transform.SetParent(this.portalTransform, true);
+                beamVfxInstance.transform.SetParent(this.muzzleTransform, true);
                 UpdateBeamTransforms();
             }
         }
@@ -192,7 +168,7 @@ namespace FathomlessVoidling
 
         private void UpdateBeamTransforms()
         {
-            beamVfxInstance.transform.SetPositionAndRotation(portalRay.origin, Quaternion.LookRotation(portalRay.direction));
+            beamVfxInstance.transform.SetPositionAndRotation(initialRay.origin, Quaternion.LookRotation(initialRay.direction));
         }
 
         public void BeginWindDown()

@@ -14,23 +14,24 @@
 
 - Primary: Void Missiles - Same
 - Secondary: Portal Beams - More lasers
-- Utility: Portal Blast - Creates a portal near a random enemy, firing a large laser through the portal
-- Special: Wandering Singularity - Creates a small black hole that follows enemies until it collapses
+- Utility:
+- Special: Wandering Singularity - Creates a small black hole that slowly follows enemies until it collapses, killing anything it touches
 
 ### Phase 3
 
 - Primary: Void Missiles - Same
 - Secondary: Portal Beams - More lasers
-- Utility:
+- Utility: Portal Blast - Creates a portal near a random enemy, firing a large laser through the portal
 - Special:
+
+### In-Between Phases
+
+- Ward Wipe: Charges up to kill everything in the vicinity, take cover in a safe ward.
 
 ### Phase 4
 
 - Certain Death: Charges up to kill everything in the vicinity, kill it first.
 
-### In-Between Phases
-
-- Ward Wipe: Charges up to kill everything in the vicinity, take cover in a safe ward.
 </details>
 
 ## Changelog

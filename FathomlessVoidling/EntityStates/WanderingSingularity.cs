@@ -3,6 +3,7 @@ using EntityStates;
 using EntityStates.VoidRaidCrab;
 using UnityEngine;
 using RoR2.Projectile;
+using RoR2.VoidRaidCrab;
 
 namespace FathomlessVoidling
 {
@@ -13,18 +14,21 @@ namespace FathomlessVoidling
         private float windDuration = 2f;
         private string animLayerName = "Body";
         private string animEnterStateName = "SuckEnter";
+        private string animLoopStateName = "SuckLoop";
         private string animExitStateName = "SuckExit";
         private string animPlaybackRateParamName = "Suck.playbackRate";
         private Transform vacuumOrigin;
         private bool hasFired = false;
+        private CentralLegController centralLegController;
+        private CentralLegController.SuppressBreaksRequest suppressBreaksRequest;
 
         public override void OnEnter()
         {
             base.OnEnter();
-
-            Debug.LogWarning(BaseVacuumAttackState.vacuumOriginChildLocatorName);
-
             this.duration = this.baseDuration / this.attackSpeedStat;
+            this.centralLegController = this.GetComponent<CentralLegController>();
+            if ((bool)centralLegController)
+                this.suppressBreaksRequest = this.centralLegController.SuppressBreaks();
             if (!string.IsNullOrEmpty(this.animLayerName) && !string.IsNullOrEmpty(this.animEnterStateName) && !string.IsNullOrEmpty(this.animPlaybackRateParamName))
                 this.PlayAnimation(this.animLayerName, this.animEnterStateName, this.animPlaybackRateParamName, this.windDuration);
             if (!string.IsNullOrEmpty(BaseVacuumAttackState.vacuumOriginChildLocatorName))
@@ -40,6 +44,7 @@ namespace FathomlessVoidling
                 return;
             if (!this.hasFired)
             {
+                this.PlayAnimation(this.animLayerName, this.animLoopStateName, this.animPlaybackRateParamName, this.windDuration);
                 this.hasFired = true;
                 ProjectileManager.instance.FireProjectile(new FireProjectileInfo
                 {
@@ -65,6 +70,7 @@ namespace FathomlessVoidling
             if (!string.IsNullOrEmpty(this.animLayerName) && !string.IsNullOrEmpty(this.animExitStateName))
                 this.PlayAnimation(this.animLayerName, this.animExitStateName, this.animPlaybackRateParamName, this.windDuration);
             base.OnExit();
+            this.suppressBreaksRequest?.Dispose();
         }
 
         public override InterruptPriority GetMinimumInterruptPriority() => InterruptPriority.Frozen;

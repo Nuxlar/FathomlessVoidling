@@ -1,7 +1,10 @@
 ﻿{
   "name": "FathomlessVoidling",
-  "version_number": "1.0.0",
-  "website_url": "",
-  "description": "1.0 UPDATE. Reworks the Voidling fight.",
-  "dependencies": ["RiskofThunder-R2API_ContentManagement-1.0.2"]
+  "version_number": "0.9.5",
+  "website_url": "https://github.com/FocusedFault/FathomlessVoidling/issues",
+  "description": "1.0 'BETA' READ MODPAGE. Reworks the Voidling fight.",
+  "dependencies": [
+    "RiskofThunder-R2API_ContentManagement-1.0.4",
+    "RiskofThunder-R2API_Prefab-1.0.3"
+  ]
 }

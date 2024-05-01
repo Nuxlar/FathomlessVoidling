@@ -22,7 +22,7 @@ using RoR2.Audio;
 
 namespace FathomlessVoidling
 {
-  [BepInPlugin("com.Nuxlar.FathomlessVoidling", "FathomlessVoidling", "1.0.0")]
+  [BepInPlugin("com.Nuxlar.FathomlessVoidling", "FathomlessVoidling", "0.9.5")]
 
   public class FathomlessVoidling : BaseUnityPlugin
   {

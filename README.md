@@ -1,7 +1,32 @@
 # Fathomless Voidling
 
+**SUBMIT UNKNOWN ISSUES USING THE LINK ABOVE**
+
+**FEEDBACK FORM [HERE](https://forms.gle/Hr8LDYBE7HZ8aF6w9)**
+
+## Info
+
+- Your run ends after Voidling dies (will be fixed next update)
+- Voidling has the stats of an alt final boss not a loop boss currently (fight after mithrix)
+- You cannot attack Voidling's main body just the joints
+- There's no config (for now)
+- Voidling doesn't take damage at the healthbar points until he phase transitions (check phase info below)
+- Small Voidling's attacks are changed as well (in case you spawn them in using debugtoolkit/aerolt)
+- Attacks might change for the 1.0
+- This mod is currently held together with duct tape but I wanted to get feedback while I take a break from it
+
+## Known Issues
+
+- Void Crit works on the joints
+- Phase 1 attacks can be interrupted by joint breaks
+- Music repeats at the end
+- If you have a ton of damage you can perma stun lock him by breaking joints and making him fall constantly
+- Run ends after big voidling dies
+
+## Attack/Phase Info
+
 <details>
-  <summary>Attack/Phase Info</summary>
+  <summary>Expand</summary>
 
 ### Phase 1
 
@@ -14,7 +39,7 @@
 
 - Primary: Void Missiles - Same
 - Secondary: Portal Beams - More lasers
-- Utility:
+- Utility: Laser Blast - Aims and fires a large laser
 - Special: Wandering Singularity - Creates a small black hole that slowly follows enemies until it collapses, killing anything it touches
 
 ### Phase 3
@@ -22,7 +47,7 @@
 - Primary: Void Missiles - Same
 - Secondary: Portal Beams - More lasers
 - Utility: Portal Blast - Creates a portal near a random enemy, firing a large laser through the portal
-- Special:
+- Special: Wandering Singularity - Creates a small black hole that slowly follows enemies until it collapses, killing anything it touches
 
 ### In-Between Phases
 
@@ -36,6 +61,6 @@
 
 ## Changelog
 
-**1.0.0**
+**0.9.5**
 
-- Release
+- 1.0 "Beta"

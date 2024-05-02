@@ -32,6 +32,9 @@ namespace FathomlessVoidling
         private Ray initialRay;
         private CentralLegController centralLegController;
         private CentralLegController.SuppressBreaksRequest suppressBreaksRequest;
+        private GameObject warningLaserVfxPrefab = FathomlessVoidling.bigLaserWarning;
+        private GameObject warningLaserVfxInstance;
+        private RayAttackIndicator warningLaserVfxInstanceRayAttackIndicator;
 
         public override void OnEnter()
         {
@@ -92,6 +95,16 @@ namespace FathomlessVoidling
             }, false);
             this.portalTransform = projectile.transform;
             this.portalRay = projectileRay;
+
+            this.warningLaserVfxInstance = Object.Instantiate(this.warningLaserVfxPrefab);
+            this.warningLaserVfxInstanceRayAttackIndicator = this.warningLaserVfxInstance.GetComponent<RayAttackIndicator>();
+            if ((bool)this.warningLaserVfxInstanceRayAttackIndicator)
+            {
+                this.warningLaserVfxInstanceRayAttackIndicator.attackRange = 1000f;
+                this.warningLaserVfxInstanceRayAttackIndicator.attackRay = projectileRay;
+                this.warningLaserVfxInstanceRayAttackIndicator.attackRadius = 22f;
+            }
+
             this.CreateBeamVFXInstance(SpinBeamWindUp.warningLaserPrefab);
             Util.PlaySound(SpinBeamWindUp.enterSoundString, this.gameObject);
         }
@@ -109,6 +122,12 @@ namespace FathomlessVoidling
                 if (!woundUp && stopwatch >= windUpDuration)
                 {
                     woundUp = true;
+
+                    if (this.warningLaserVfxInstance)
+                        GameObject.Destroy(this.warningLaserVfxInstance);
+                    if (this.warningLaserVfxInstanceRayAttackIndicator)
+                        this.warningLaserVfxInstanceRayAttackIndicator = null;
+
                     this.DestroyBeamVFXInstance();
                     this.CreateBeamVFXInstance(SpinBeamAttack.beamVfxPrefab);
                     this.loopPtr = LoopSoundManager.PlaySoundLoopLocal(this.gameObject, SpinBeamAttack.loopSound);
@@ -153,7 +172,7 @@ namespace FathomlessVoidling
                 hitMask = LayerIndex.CommonMasks.bullet,
                 stopperMask = 0,
                 bulletCount = 1U,
-                radius = 30,
+                radius = 22f,
                 smartCollision = false,
                 queryTriggerInteraction = QueryTriggerInteraction.Ignore,
                 procCoefficient = 1f,

@@ -184,7 +184,7 @@ namespace FathomlessVoidling
                     hitMask = LayerIndex.CommonMasks.bullet,
                     stopperMask = 0,
                     bulletCount = 1U,
-                    radius = 30,
+                    radius = 28f,
                     smartCollision = false,
                     queryTriggerInteraction = QueryTriggerInteraction.Ignore,
                     procCoefficient = 1f,

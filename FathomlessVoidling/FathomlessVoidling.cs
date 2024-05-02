@@ -22,7 +22,7 @@ using RoR2.Audio;
 
 namespace FathomlessVoidling
 {
-  [BepInPlugin("com.Nuxlar.FathomlessVoidling", "FathomlessVoidling", "0.9.5")]
+  [BepInPlugin("com.Nuxlar.FathomlessVoidling", "FathomlessVoidling", "0.9.6")]
 
   public class FathomlessVoidling : BaseUnityPlugin
   {
@@ -42,6 +42,7 @@ namespace FathomlessVoidling
     private static Material voidCylinderMat = Addressables.LoadAssetAsync<Material>("RoR2/DLC1/GameModes/InfiniteTowerRun/InfiniteTowerAssets/matITSafeWardAreaIndicator1.mat").WaitForCompletion();
     public static GameObject chargeVoidRain = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabTripleBeamChargeUp.prefab").WaitForCompletion();
     public static GameObject voidRainWarning = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/MultiBeamRayIndicator.prefab").WaitForCompletion();
+    public static GameObject bigLaserWarning = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/MultiBeamRayIndicator.prefab").WaitForCompletion(), "BigLaserIndicatorNux");
     public static GameObject voidRainTracer = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/TracerVoidRaidCrabTripleBeamSmall.prefab").WaitForCompletion();
     public static GameObject voidRainExplosion = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabTripleBeamExplosion.prefab").WaitForCompletion();
     private static GameObject voidlingMaster = Addressables.LoadAssetAsync<GameObject>("RoR2/DLC1/VoidRaidCrab/VoidRaidCrabMaster.prefab").WaitForCompletion();
@@ -120,6 +121,11 @@ namespace FathomlessVoidling
       ContentAddition.AddBody(voidEye);
       ContentAddition.AddMaster(voidEyeMaster);
       */
+      LineRenderer lineRenderer = bigLaserWarning.transform.GetChild(1).GetComponent<LineRenderer>();
+      lineRenderer.startWidth = 10f;
+      lineRenderer.endWidth = 10f;
+      lineRenderer.textureMode = LineTextureMode.Stretch;
+
       ProjectileController component = meteor.GetComponent<ProjectileController>();
       component.cannotBeDeleted = true;
       meteor.transform.localScale = new Vector3(1.75f, 1.75f, 1.75f);
@@ -248,11 +254,11 @@ namespace FathomlessVoidling
       ContentAddition.AddEntityState<BetterReEmerge>(out _);
 
       spinBeamVFX.transform.localScale *= 2;
-      voidling.GetComponent<CharacterBody>().baseMaxHealth = 4000f; // 8000
-      voidling.GetComponent<CharacterBody>().levelMaxHealth = 1200; // 2400
+      voidling.GetComponent<CharacterBody>().baseMaxHealth = 1000f; // 8000
+      voidling.GetComponent<CharacterBody>().levelMaxHealth = 300; // 2400
       voidling.GetComponent<CharacterBody>().baseArmor = 40;
-      joint.GetComponent<CharacterBody>().baseMaxHealth = 1000; // 1000
-      joint.GetComponent<CharacterBody>().levelMaxHealth = 300f; // 300
+      joint.GetComponent<CharacterBody>().baseMaxHealth = 500; // 1000
+      joint.GetComponent<CharacterBody>().levelMaxHealth = 150f; // 300
 
       spawnEffect.transform.localScale *= 2;
 
@@ -420,6 +426,11 @@ namespace FathomlessVoidling
     private void CharacterMaster_OnBodyStart(On.RoR2.CharacterMaster.orig_OnBodyStart orig, CharacterMaster self, CharacterBody body)
     {
       orig(self, body);
+      if (body.name == "VoidRaidCrabJointBody(Clone)" && SceneManager.GetActiveScene().name == "voidraid")
+      {
+        body.inventory.GiveItemString("AdaptiveArmor");
+        self.isBoss = true;
+      }
       if (body.isPlayerControlled && SceneManager.GetActiveScene().name == "voidraid" && body.HasBuff(RoR2Content.Buffs.Immune))
       {
         GameObject crab = GameObject.Find("VoidRaidCrabBody(Clone)");
@@ -452,7 +463,7 @@ namespace FathomlessVoidling
       }
       else
       {
-        SpinBeamAttack.beamRadius = 30f;
+        SpinBeamAttack.beamRadius = 26f;
         self.headForwardYCurve = AnimationCurve.Linear(0, 0, 10, 0);
         orig(self);
       }

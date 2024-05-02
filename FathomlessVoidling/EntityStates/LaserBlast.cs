@@ -16,7 +16,7 @@ namespace FathomlessVoidling
 
         public float baseDuration = 4f;
         public float duration;
-        public float windUpDuration = 2f;
+        public float windUpDuration = 3f;
         public bool woundUp = false;
         public bool woundDown = false;
         public GameObject beamVfxInstance;

@@ -6,6 +6,7 @@ using RoR2.Projectile;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Networking.Types;
 
 namespace FathomlessVoidling
 {
@@ -60,6 +61,7 @@ namespace FathomlessVoidling
             }, false);
 
             GameObject projectile = new GameObject("VoidRainProjectile");
+            projectile.AddComponent<NetworkIdentity>();
             projectile.transform.position = projectileRay.origin;
             projectile.transform.rotation = Util.QuaternionSafeLookRotation(projectileRay.direction);
 

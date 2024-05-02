@@ -121,6 +121,7 @@ namespace FathomlessVoidling
       ContentAddition.AddBody(voidEye);
       ContentAddition.AddMaster(voidEyeMaster);
       */
+
       LineRenderer lineRenderer = bigLaserWarning.transform.GetChild(1).GetComponent<LineRenderer>();
       lineRenderer.startWidth = 10f;
       lineRenderer.endWidth = 10f;
@@ -315,6 +316,16 @@ namespace FathomlessVoidling
       On.RoR2.VoidRaidCrab.VoidRaidCrabAISkillDriverController.ShouldUseFinalStandSkill += SwapToFinalStand;
       On.EntityStates.VoidRaidCrab.ChargeWardWipe.GetMinimumInterruptPriority += IncreaseInterruptPriorityChargeWardWipe;
       On.EntityStates.VoidRaidCrab.FireWardWipe.GetMinimumInterruptPriority += IncreaseInterruptPriorityFireWardWipe;
+      On.RoR2.SpawnCard.DoSpawn += JointDebug;
+    }
+
+    private SpawnCard.SpawnResult JointDebug(On.RoR2.SpawnCard.orig_DoSpawn orig, SpawnCard self, Vector3 position, Quaternion rotation, DirectorSpawnRequest spawnRequest)
+    {
+      UnityEngine.Debug.LogWarning(self.sendOverNetwork);
+      UnityEngine.Debug.LogWarning(self.forbiddenFlags);
+      UnityEngine.Debug.LogWarning(self.directorCreditCost);
+
+      return orig(self, position, rotation, spawnRequest);
     }
 
     private InterruptPriority IncreaseInterruptPriorityFireWardWipe(On.EntityStates.VoidRaidCrab.FireWardWipe.orig_GetMinimumInterruptPriority orig, FireWardWipe self)
@@ -446,7 +457,7 @@ namespace FathomlessVoidling
       {
         if (inventorySetter.phaseIndex == 0)
         {
-          SpinBeamAttack.beamRadius = 30f;
+          SpinBeamAttack.beamRadius = 22f;
           self.headForwardYCurve = AnimationCurve.Linear(0, 0, 10, 0);
           orig(self);
         }
@@ -463,7 +474,7 @@ namespace FathomlessVoidling
       }
       else
       {
-        SpinBeamAttack.beamRadius = 26f;
+        SpinBeamAttack.beamRadius = 22f;
         self.headForwardYCurve = AnimationCurve.Linear(0, 0, 10, 0);
         orig(self);
       }

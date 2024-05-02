@@ -67,6 +67,7 @@
 - Reduced joint HP
 - Gave joints Adaptive Armor (mithrix armor)
 - Made joints count as bosses
+- Increased Laser Blast's charge delay (2s -> 3s)
 - Added attack indicator for Phase 2/3's big laser attacks
 - Reduced big laser attack radius to match the VFX
 

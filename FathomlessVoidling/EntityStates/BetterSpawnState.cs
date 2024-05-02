@@ -30,12 +30,12 @@ namespace FathomlessVoidling
     {
       base.OnEnter();
       Util.PlaySound(this.spawnSoundString, GameObject.Find("SpawnCamera"));
-      if ((bool)(Object)this.spawnEffectPrefab)
+      if ((bool)this.spawnEffectPrefab)
         EffectManager.SpawnEffect(this.spawnEffectPrefab, new EffectData() { origin = new Vector3(0, -60, 0), scale = 2, rotation = Quaternion.identity }, true);
       if (!this.doLegs || !NetworkServer.active)
         return;
       ChildLocator modelChildLocator = this.GetModelChildLocator();
-      if (!(bool)(Object)this.jointSpawnCard || !(bool)(Object)modelChildLocator)
+      if (!(bool)this.jointSpawnCard || !(bool)modelChildLocator)
         return;
       DirectorPlacementRule placementRule = new DirectorPlacementRule()
       {
@@ -57,18 +57,18 @@ namespace FathomlessVoidling
       ChildLocator childLocator,
       DirectorPlacementRule placementRule)
     {
-      GameObject gameObject = DirectorCore.instance?.TrySpawnObject(new DirectorSpawnRequest((SpawnCard)this.jointSpawnCard, placementRule, Run.instance.stageRng)
+      GameObject gameObject = DirectorCore.instance?.TrySpawnObject(new DirectorSpawnRequest(this.jointSpawnCard, placementRule, Run.instance.stageRng)
       {
-        summonerBodyObject = this.gameObject
+        summonerBodyObject = this.gameObject,
       });
       Transform child = childLocator.FindChild(legName);
-      if (!(bool)(Object)gameObject || !(bool)(Object)child)
+      if (!(bool)gameObject && !(bool)child)
         return;
       CharacterMaster component1 = gameObject.GetComponent<CharacterMaster>();
-      if (!(bool)(Object)component1)
+      if (!(bool)component1)
         return;
       LegController component2 = child.GetComponent<LegController>();
-      if (!(bool)(Object)component2)
+      if (!(bool)component2)
         return;
       component2.SetJointMaster(component1, child.GetComponent<ChildLocator>());
     }

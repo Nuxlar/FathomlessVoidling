@@ -100,6 +100,7 @@ namespace FathomlessVoidling
             this.warningLaserVfxInstanceRayAttackIndicator = this.warningLaserVfxInstance.GetComponent<RayAttackIndicator>();
             if ((bool)this.warningLaserVfxInstanceRayAttackIndicator)
             {
+                this.warningLaserVfxInstanceRayAttackIndicator.layerMask = LayerIndex.playerBody.mask;
                 this.warningLaserVfxInstanceRayAttackIndicator.attackRange = 1000f;
                 this.warningLaserVfxInstanceRayAttackIndicator.attackRay = projectileRay;
                 this.warningLaserVfxInstanceRayAttackIndicator.attackRadius = 22f;
@@ -124,7 +125,7 @@ namespace FathomlessVoidling
                     woundUp = true;
 
                     if (this.warningLaserVfxInstance)
-                        GameObject.Destroy(this.warningLaserVfxInstance);
+                        EntityState.Destroy(this.warningLaserVfxInstance);
                     if (this.warningLaserVfxInstanceRayAttackIndicator)
                         this.warningLaserVfxInstanceRayAttackIndicator = null;
 

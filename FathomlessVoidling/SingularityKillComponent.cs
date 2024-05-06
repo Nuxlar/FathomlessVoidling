@@ -14,7 +14,6 @@ namespace FathomlessVoidling
 
         public void OnTriggerEnter(Collider other)
         {
-            Debug.LogWarning(other.gameObject);
             if (other.gameObject.GetComponent<HurtBox>())
             {
                 HurtBox hb = other.gameObject.GetComponent<HurtBox>();

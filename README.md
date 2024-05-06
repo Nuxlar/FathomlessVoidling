@@ -17,10 +17,9 @@
 
 ## Known Issues
 
-- In multiplayer, non-hosts can't see or damage joints
-- Phase 1 attacks can be interrupted by joint breaks
+- No multiplayer compatibility for now
+- Acrid's epidemic can get through the barrier and poison the main body
 - Music repeats at the end
-- If you have a ton of damage you can perma stun lock him by breaking joints and making him fall constantly
 - Run ends after big voidling dies
 
 ## Attack/Phase Info
@@ -60,6 +59,21 @@
 </details>
 
 ## Changelog
+
+**0.9.7**
+
+- Removes debug log spam
+- Added basic loop support until config is made (HP is multiplied by loop count)
+- Reduced main body HP again
+- Removed oscillation from primary attack
+- Increased tracking on primary attack
+- Increased speed of Wandering Singularity by 50%
+- Increased size of Phase 2/3's big laser attack indicator
+- Reduced Portal Beam spawn frequency for Phase 2 and Phase 3
+- Increased safe wards for Ward Wipe attack
+- Removed joint break Stun state
+- Removed Collapse state (falling through the donut)
+- Added joints regenerating on the third break instead of collapsing
 
 **0.9.6**
 

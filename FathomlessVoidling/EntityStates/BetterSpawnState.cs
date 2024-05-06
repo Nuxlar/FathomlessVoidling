@@ -3,6 +3,7 @@ using RoR2.VoidRaidCrab;
 using UnityEngine;
 using UnityEngine.Networking;
 using EntityStates;
+using System;
 
 namespace FathomlessVoidling
 {
@@ -30,8 +31,9 @@ namespace FathomlessVoidling
     {
       base.OnEnter();
       Util.PlaySound(this.spawnSoundString, GameObject.Find("SpawnCamera"));
+      this.characterModel = this.GetModelTransform().GetComponent<CharacterModel>();
       if ((bool)this.spawnEffectPrefab)
-        EffectManager.SpawnEffect(this.spawnEffectPrefab, new EffectData() { origin = new Vector3(0, -60, 0), scale = 2, rotation = Quaternion.identity }, true);
+        EffectManager.SpawnEffect(this.spawnEffectPrefab, new EffectData() { origin = new Vector3(0, -60, 0), scale = 2, rotation = Quaternion.identity }, false);
       if (!this.doLegs || !NetworkServer.active)
         return;
       ChildLocator modelChildLocator = this.GetModelChildLocator();
@@ -48,8 +50,8 @@ namespace FathomlessVoidling
       this.SpawnJointBodyForLegServer(this.leg4Name, modelChildLocator, placementRule);
       this.SpawnJointBodyForLegServer(this.leg5Name, modelChildLocator, placementRule);
       this.SpawnJointBodyForLegServer(this.leg6Name, modelChildLocator, placementRule);
-      this.characterModel = this.GetModelTransform().GetComponent<CharacterModel>();
-      ++this.characterModel.invisibilityCount;
+      if ((bool)this.characterModel)
+        ++this.characterModel.invisibilityCount;
     }
 
     private void SpawnJointBodyForLegServer(
@@ -83,7 +85,21 @@ namespace FathomlessVoidling
         // TeleportHelper.TeleportBody(this.characterBody, new Vector3(0, -10, 0));
         this.PlayAnimation(this.animationLayerName, this.animationStateName, this.animationPlaybackRateParam, this.duration);
         this.playedAnim = true;
-        --this.characterModel.invisibilityCount;
+        if ((bool)this.characterModel)
+          --this.characterModel.invisibilityCount;
+        ChildLocator modelChildLocator = this.GetModelChildLocator();
+        Transform child1 = modelChildLocator.FindChild(leg1Name);
+        child1.GetComponent<LegController>().MirrorLegJoints();
+        Transform child2 = modelChildLocator.FindChild(leg2Name);
+        child2.GetComponent<LegController>().MirrorLegJoints();
+        Transform child3 = modelChildLocator.FindChild(leg3Name);
+        child3.GetComponent<LegController>().MirrorLegJoints();
+        Transform child4 = modelChildLocator.FindChild(leg4Name);
+        child4.GetComponent<LegController>().MirrorLegJoints();
+        Transform child5 = modelChildLocator.FindChild(leg5Name);
+        child5.GetComponent<LegController>().MirrorLegJoints();
+        Transform child6 = modelChildLocator.FindChild(leg6Name);
+        child6.GetComponent<LegController>().MirrorLegJoints();
       }
       if ((double)this.fixedAge < (double)this.duration || !this.isAuthority)
         return;

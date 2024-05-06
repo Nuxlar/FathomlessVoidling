@@ -19,10 +19,11 @@ using HarmonyLib;
 using MonoMod.RuntimeDetour;
 using System.Diagnostics;
 using RoR2.Audio;
+using UnityEngine.Networking.Types;
 
 namespace FathomlessVoidling
 {
-  [BepInPlugin("com.Nuxlar.FathomlessVoidling", "FathomlessVoidling", "0.9.6")]
+  [BepInPlugin("com.Nuxlar.FathomlessVoidling", "FathomlessVoidling", "0.9.7")]
 
   public class FathomlessVoidling : BaseUnityPlugin
   {
@@ -65,9 +66,10 @@ namespace FathomlessVoidling
     public static Material voidEyeMat4 = Addressables.LoadAssetAsync<Material>("RoR2/DLC1/VoidRaidCrab/matVoidRaidCrabEyeOverlay3.mat").WaitForCompletion();
     public static GameObject meteor = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Grandparent/GrandparentBoulder.prefab").WaitForCompletion(), "VoidMeteor");
     private static GameObject meteorGhost = PrefabAPI.InstantiateClone(Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Grandparent/GrandparentBoulderGhost.prefab").WaitForCompletion(), "VoidMeteorGhost");
-    private static Material boulderMat = Addressables.LoadAssetAsync<Material>((object)"RoR2/Base/Grandparent/matGrandparentBoulderProjectile.mat").WaitForCompletion();
-    private static Material voidAffixMat = Addressables.LoadAssetAsync<Material>((object)"RoR2/DLC1/EliteVoid/matEliteVoidOverlay.mat").WaitForCompletion();
+    private static Material boulderMat = Addressables.LoadAssetAsync<Material>("RoR2/Base/Grandparent/matGrandparentBoulderProjectile.mat").WaitForCompletion();
+    private static Material voidAffixMat = Addressables.LoadAssetAsync<Material>("RoR2/DLC1/EliteVoid/matEliteVoidOverlay.mat").WaitForCompletion();
     private bool shouldGauntlet = false;
+    private int jointCounter = 0;
     private static SkillDef finalStandDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidRaidCrab/RaidCrabFinalStand.asset").WaitForCompletion();
     public void Awake()
     {
@@ -123,8 +125,8 @@ namespace FathomlessVoidling
       */
 
       LineRenderer lineRenderer = bigLaserWarning.transform.GetChild(1).GetComponent<LineRenderer>();
-      lineRenderer.startWidth = 10f;
-      lineRenderer.endWidth = 10f;
+      lineRenderer.startWidth = 20f;
+      lineRenderer.endWidth = 20f;
       lineRenderer.textureMode = LineTextureMode.Stretch;
 
       ProjectileController component = meteor.GetComponent<ProjectileController>();
@@ -185,7 +187,7 @@ namespace FathomlessVoidling
       projectileController.flightSoundLoop = singularityLSD;
       projectileController.myColliders = new Collider[1] { sphereCollider };
       ProjectileSimple projectileSimple = wSingularityProjectile.GetComponent<ProjectileSimple>();
-      projectileSimple.desiredForwardSpeed = 10f;
+      projectileSimple.desiredForwardSpeed = 15f;
       projectileSimple.lifetime = 30f;
       wSingularityProjectile.transform.localScale = Vector3.one;
 
@@ -255,8 +257,8 @@ namespace FathomlessVoidling
       ContentAddition.AddEntityState<BetterReEmerge>(out _);
 
       spinBeamVFX.transform.localScale *= 2;
-      voidling.GetComponent<CharacterBody>().baseMaxHealth = 1000f; // 8000
-      voidling.GetComponent<CharacterBody>().levelMaxHealth = 300; // 2400
+      voidling.GetComponent<CharacterBody>().baseMaxHealth = 500f; // 8000
+      voidling.GetComponent<CharacterBody>().levelMaxHealth = 150; // 2400
       voidling.GetComponent<CharacterBody>().baseArmor = 40;
       joint.GetComponent<CharacterBody>().baseMaxHealth = 500; // 1000
       joint.GetComponent<CharacterBody>().levelMaxHealth = 150f; // 300
@@ -264,9 +266,9 @@ namespace FathomlessVoidling
       spawnEffect.transform.localScale *= 2;
 
       missileImpact.transform.localScale *= 4;
-      missileProjectile.GetComponent<ProjectileSimple>().oscillate = true;
-      missileProjectile.GetComponent<ProjectileSimple>().oscillateSpeed = 5f;
-      missileProjectile.GetComponent<ProjectileSteerTowardTarget>().rotationSpeed = 30f;
+      // missileProjectile.GetComponent<ProjectileSimple>().oscillate = true;
+      // missileProjectile.GetComponent<ProjectileSimple>().oscillateSpeed = 5f;
+      missileProjectile.GetComponent<ProjectileSteerTowardTarget>().rotationSpeed = 60f;
       missileProjectile.AddComponent<ProjectileImpactExplosion>().blastRadius = 3f;
       missileProjectile.GetComponent<ProjectileImpactExplosion>().impactEffect = missileImpact;
       missileProjectile.GetComponent<ProjectileImpactExplosion>().destroyOnWorld = true;
@@ -299,6 +301,10 @@ namespace FathomlessVoidling
 
       On.RoR2.Stage.Start += Stage_Start;
       On.RoR2.CharacterMaster.OnBodyStart += CharacterMaster_OnBodyStart;
+      On.RoR2.VoidRaidCrab.LegController.SetJointMaster += SetJointMaster;
+      On.EntityStates.VoidRaidCrab.Joint.PreDeathState.SpawnJointEffect += SpawnJointEffectMP;
+      On.EntityStates.VoidRaidCrab.Joint.DeathState.OnEnter += SpawnJointDeathEffectMP;
+      On.RoR2.VoidRaidCrab.CentralLegController.UpdateLegsAuthority += RemoveStunCollapse;
       On.EntityStates.VoidRaidCrab.SpawnState.OnEnter += VoidRaidCrab_SpawnState;
       On.EntityStates.VoidRaidCrab.Collapse.OnEnter += Collapse_OnEnter;
       On.EntityStates.VoidRaidCrab.ReEmerge.OnEnter += ReEmerge_OnEnter;
@@ -316,16 +322,78 @@ namespace FathomlessVoidling
       On.RoR2.VoidRaidCrab.VoidRaidCrabAISkillDriverController.ShouldUseFinalStandSkill += SwapToFinalStand;
       On.EntityStates.VoidRaidCrab.ChargeWardWipe.GetMinimumInterruptPriority += IncreaseInterruptPriorityChargeWardWipe;
       On.EntityStates.VoidRaidCrab.FireWardWipe.GetMinimumInterruptPriority += IncreaseInterruptPriorityFireWardWipe;
-      On.RoR2.SpawnCard.DoSpawn += JointDebug;
     }
 
-    private SpawnCard.SpawnResult JointDebug(On.RoR2.SpawnCard.orig_DoSpawn orig, SpawnCard self, Vector3 position, Quaternion rotation, DirectorSpawnRequest spawnRequest)
+    private void RemoveStunCollapse(On.RoR2.VoidRaidCrab.CentralLegController.orig_UpdateLegsAuthority orig, CentralLegController self)
     {
-      UnityEngine.Debug.LogWarning(self.sendOverNetwork);
-      UnityEngine.Debug.LogWarning(self.forbiddenFlags);
-      UnityEngine.Debug.LogWarning(self.directorCreditCost);
+      self.legSupportTracker.allLegsNeededForAnimation = !self.bodyStateMachine.IsInMainState();
+      self.legSupportTracker.Refresh();
+      bool flag = false;
+      for (int index = 0; index < self.legControllers.Length; ++index)
+      {
+        if (self.legControllers[index].IsBreakPending())
+        {
+          flag = true;
+          self.legControllers[index].CompleteBreakAuthority();
+        }
+      }
+      if (flag)
+      {
+        if (!self.legSupportTracker.IsLegStateStable())
+        {
+          for (int index = 0; index < self.legControllers.Length; ++index)
+          {
+            if (self.legControllers[index].IsBroken())
+              self.legControllers[index].RegenerateServer();
+          }
+        }
+      }
+      self.TryNextStompAuthority();
+    }
 
-      return orig(self, position, rotation, spawnRequest);
+    private bool SetJointMaster(On.RoR2.VoidRaidCrab.LegController.orig_SetJointMaster orig, LegController self, CharacterMaster master, ChildLocator legChildLocator)
+    {
+      self.legChildLocator = legChildLocator;
+      if (!(bool)self.jointMaster)
+      {
+        self.jointMaster = master;
+        if ((bool)self.jointMaster)
+        {
+          self.jointMaster.onBodyDestroyed += new Action<CharacterBody>(self.OnJointBodyDestroyed);
+          self.jointMaster.onBodyStart += new Action<CharacterBody>(self.OnJointBodyStart);
+          self.MirrorLegJoints();
+        }
+        return true;
+      }
+      return false;
+    }
+
+    private void SpawnJointEffectMP(On.EntityStates.VoidRaidCrab.Joint.PreDeathState.orig_SpawnJointEffect orig, EntityStates.VoidRaidCrab.Joint.PreDeathState self, string jointName, ChildLocator childLocator)
+    {
+      Transform child = childLocator.FindChild(jointName);
+      if (!(bool)child)
+        return;
+      GameObject effect = GameObject.Instantiate(self.jointEffectPrefab, child);
+      effect.AddComponent<NetworkIdentity>();
+      NetworkServer.Spawn(effect);
+      self.jointEffects.Add(effect);
+    }
+
+    private void SpawnJointDeathEffectMP(On.EntityStates.VoidRaidCrab.Joint.DeathState.orig_OnEnter orig, EntityStates.VoidRaidCrab.Joint.DeathState self)
+    {
+      IntPtr ptr = typeof(BaseState).GetMethod(nameof(BaseState.OnEnter)).MethodHandle.GetFunctionPointer();
+      Action baseOnEnter = (Action)Activator.CreateInstance(typeof(Action), self, ptr);
+      baseOnEnter();
+
+      EffectManager.SimpleMuzzleFlash(self.joint1EffectPrefab, self.gameObject, self.joint1Name, true);
+      EffectManager.SimpleMuzzleFlash(self.joint2EffectPrefab, self.gameObject, self.joint2Name, true);
+      EffectManager.SimpleMuzzleFlash(self.joint3EffectPrefab, self.gameObject, self.joint3Name, true);
+      Transform modelTransform = self.GetModelTransform();
+      if ((bool)modelTransform)
+        self.characterModel = modelTransform.GetComponent<CharacterModel>();
+      if (!(bool)self.characterModel)
+        return;
+      ++self.characterModel.invisibilityCount;
     }
 
     private InterruptPriority IncreaseInterruptPriorityFireWardWipe(On.EntityStates.VoidRaidCrab.FireWardWipe.orig_GetMinimumInterruptPriority orig, FireWardWipe self)
@@ -437,10 +505,53 @@ namespace FathomlessVoidling
     private void CharacterMaster_OnBodyStart(On.RoR2.CharacterMaster.orig_OnBodyStart orig, CharacterMaster self, CharacterBody body)
     {
       orig(self, body);
-      if (body.name == "VoidRaidCrabJointBody(Clone)" && SceneManager.GetActiveScene().name == "voidraid")
+      if (body.name == "VoidRaidCrabJointBody(Clone)")
       {
         body.inventory.GiveItemString("AdaptiveArmor");
         self.isBoss = true;
+        if (self.isServer)
+          return;
+        string legName = "";
+        switch (this.jointCounter)
+        {
+          case 0:
+            legName = "FrontLegL";
+            break;
+          case 1:
+            legName = "FrontLegR";
+            break;
+          case 2:
+            legName = "MidLegL";
+            break;
+          case 3:
+            legName = "MidLegR";
+            break;
+          case 4:
+            legName = "BackLegL";
+            break;
+          case 5:
+            legName = "BackLegR";
+            break;
+        }
+        this.jointCounter++;
+        CharacterBody mainBody = self.GetComponent<MinionOwnership>().ownerMaster.GetBody();
+        if (!(bool)mainBody)
+          mainBody = GameObject.Find("VoidRaidCrabBody(Clone)").GetComponent<CharacterBody>();
+        ChildLocator childLocator = mainBody.modelLocator.modelTransform.GetComponent<ChildLocator>();
+        if (!(bool)childLocator)
+          return;
+        Transform child = childLocator.FindChild(legName);
+        if (!(bool)child)
+          return;
+        LegController legController = child.GetComponent<LegController>();
+        if (!(bool)legController)
+          return;
+        if (this.jointCounter >= 6)
+        {
+          legController.MirrorLegJoints();
+          return;
+        }
+        legController.SetJointMaster(body.master, child.GetComponent<ChildLocator>());
       }
       if (body.isPlayerControlled && SceneManager.GetActiveScene().name == "voidraid" && body.HasBuff(RoR2Content.Buffs.Immune))
       {
@@ -529,6 +640,7 @@ namespace FathomlessVoidling
 
     private void ChargeWardWipe_OnEnter(On.EntityStates.VoidRaidCrab.ChargeWardWipe.orig_OnEnter orig, ChargeWardWipe self)
     {
+      self.safeWardSpawnCurve = AnimationCurve.Linear(0, 15, 0.25f, 20);
       PhasedInventorySetter inventorySetter = self.characterBody.GetComponent<PhasedInventorySetter>();
 
       if (inventorySetter)
@@ -611,6 +723,24 @@ namespace FathomlessVoidling
       orig(self);
       if (self.sceneDef.cachedName == "voidraid")
       {
+        if (Run.instance)
+        {
+          if (Run.instance.loopClearCount > 1)
+          {
+            voidling.GetComponent<CharacterBody>().baseMaxHealth = 500 * Run.instance.loopClearCount; // 8000
+            voidling.GetComponent<CharacterBody>().levelMaxHealth = 150 * Run.instance.loopClearCount; // 2400
+            joint.GetComponent<CharacterBody>().baseMaxHealth = 500 * Run.instance.loopClearCount; // 1000
+            joint.GetComponent<CharacterBody>().levelMaxHealth = 150 * Run.instance.loopClearCount; ; // 300
+          }
+          else
+          {
+            voidling.GetComponent<CharacterBody>().baseMaxHealth = 500; // 8000
+            voidling.GetComponent<CharacterBody>().levelMaxHealth = 150; // 2400
+            joint.GetComponent<CharacterBody>().baseMaxHealth = 500; // 1000
+            joint.GetComponent<CharacterBody>().levelMaxHealth = 150; ; // 300
+          }
+        }
+        jointCounter = 0;
         shouldGauntlet = false;
         GameObject phases = GameObject.Find("EncounterPhases");
         Transform cam = GameObject.Find("RaidVoid").transform.GetChild(8);

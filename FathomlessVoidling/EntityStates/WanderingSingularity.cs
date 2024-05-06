@@ -46,19 +46,22 @@ namespace FathomlessVoidling
             {
                 this.PlayAnimation(this.animLayerName, this.animLoopStateName, this.animPlaybackRateParamName, this.windDuration);
                 this.hasFired = true;
-                ProjectileManager.instance.FireProjectile(new FireProjectileInfo
+                if (this.isAuthority)
                 {
-                    projectilePrefab = FathomlessVoidling.wSingularityProjectile,
-                    position = this.vacuumOrigin.position,
-                    rotation = this.vacuumOrigin.rotation,
-                    owner = this.gameObject,
-                    damage = 1f,
-                    force = 0f,
-                    crit = false,
-                    damageColorIndex = DamageColorIndex.Void,
-                    target = null,
-                    damageTypeOverride = DamageType.BypassBlock | DamageType.VoidDeath
-                });
+                    ProjectileManager.instance.FireProjectile(new FireProjectileInfo
+                    {
+                        projectilePrefab = FathomlessVoidling.wSingularityProjectile,
+                        position = this.vacuumOrigin.position,
+                        rotation = this.vacuumOrigin.rotation,
+                        owner = this.gameObject,
+                        damage = 1f,
+                        force = 0f,
+                        crit = false,
+                        damageColorIndex = DamageColorIndex.Void,
+                        target = null,
+                        damageTypeOverride = DamageType.BypassBlock | DamageType.VoidDeath
+                    });
+                }
             }
             if (!this.isAuthority || (double)this.fixedAge < (double)this.duration)
                 return;

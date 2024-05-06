@@ -16,7 +16,7 @@ namespace FathomlessVoidling
 
         public float baseDuration = 4f;
         public float duration;
-        public float windUpDuration = 3f;
+        public float windUpDuration = 2f;
         public bool woundUp = false;
         public bool woundDown = false;
         public GameObject beamVfxInstance;
@@ -76,6 +76,7 @@ namespace FathomlessVoidling
             this.warningLaserVfxInstanceRayAttackIndicator = this.warningLaserVfxInstance.GetComponent<RayAttackIndicator>();
             if ((bool)this.warningLaserVfxInstanceRayAttackIndicator)
             {
+                this.warningLaserVfxInstanceRayAttackIndicator.layerMask = LayerIndex.playerBody.mask;
                 this.warningLaserVfxInstanceRayAttackIndicator.attackRange = 1000f;
                 this.warningLaserVfxInstanceRayAttackIndicator.attackRay = this.initialRay;
                 this.warningLaserVfxInstanceRayAttackIndicator.attackRadius = 22f;
@@ -99,7 +100,7 @@ namespace FathomlessVoidling
                 {
                     woundUp = true;
                     if (this.warningLaserVfxInstance)
-                        GameObject.Destroy(this.warningLaserVfxInstance);
+                        EntityState.Destroy(this.warningLaserVfxInstance);
                     if (this.warningLaserVfxInstanceRayAttackIndicator)
                         this.warningLaserVfxInstanceRayAttackIndicator = null;
                     this.DestroyBeamVFXInstance();

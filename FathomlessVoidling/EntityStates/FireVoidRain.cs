@@ -37,10 +37,10 @@ namespace FathomlessVoidling
                         FireVoidRain.missileSpawnFrequency = 3f;
                         break;
                     case 1:
-                        FireVoidRain.missileSpawnFrequency = 6f;
+                        FireVoidRain.missileSpawnFrequency = 5f;
                         break;
                     case 2:
-                        FireVoidRain.missileSpawnFrequency = 9f;
+                        FireVoidRain.missileSpawnFrequency = 7f;
                         break;
                 }
             }

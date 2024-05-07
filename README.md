@@ -60,6 +60,10 @@
 
 ## Changelog
 
+**0.9.8**
+
+- Fixes single joint breaking multiple times instead of once
+
 **0.9.7**
 
 - Removes debug log spam

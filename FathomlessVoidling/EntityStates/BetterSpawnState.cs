@@ -87,19 +87,6 @@ namespace FathomlessVoidling
         this.playedAnim = true;
         if ((bool)this.characterModel)
           --this.characterModel.invisibilityCount;
-        ChildLocator modelChildLocator = this.GetModelChildLocator();
-        Transform child1 = modelChildLocator.FindChild(leg1Name);
-        child1.GetComponent<LegController>().MirrorLegJoints();
-        Transform child2 = modelChildLocator.FindChild(leg2Name);
-        child2.GetComponent<LegController>().MirrorLegJoints();
-        Transform child3 = modelChildLocator.FindChild(leg3Name);
-        child3.GetComponent<LegController>().MirrorLegJoints();
-        Transform child4 = modelChildLocator.FindChild(leg4Name);
-        child4.GetComponent<LegController>().MirrorLegJoints();
-        Transform child5 = modelChildLocator.FindChild(leg5Name);
-        child5.GetComponent<LegController>().MirrorLegJoints();
-        Transform child6 = modelChildLocator.FindChild(leg6Name);
-        child6.GetComponent<LegController>().MirrorLegJoints();
       }
       if ((double)this.fixedAge < (double)this.duration || !this.isAuthority)
         return;

@@ -23,7 +23,7 @@ using UnityEngine.Networking.Types;
 
 namespace FathomlessVoidling
 {
-  [BepInPlugin("com.Nuxlar.FathomlessVoidling", "FathomlessVoidling", "0.9.7")]
+  [BepInPlugin("com.Nuxlar.FathomlessVoidling", "FathomlessVoidling", "0.9.8")]
 
   public class FathomlessVoidling : BaseUnityPlugin
   {
@@ -302,6 +302,8 @@ namespace FathomlessVoidling
       On.RoR2.Stage.Start += Stage_Start;
       On.RoR2.CharacterMaster.OnBodyStart += CharacterMaster_OnBodyStart;
       On.RoR2.VoidRaidCrab.LegController.SetJointMaster += SetJointMaster;
+      On.EntityStates.VoidRaidCrab.Joint.PreDeathState.OnEnter += AddJointDeathDelay;
+      // On.EntityStates.VoidRaidCrab.Joint.PreDeathState.FixedUpdate += AddJointBreakAuthority;
       On.EntityStates.VoidRaidCrab.Joint.PreDeathState.SpawnJointEffect += SpawnJointEffectMP;
       On.EntityStates.VoidRaidCrab.Joint.DeathState.OnEnter += SpawnJointDeathEffectMP;
       On.RoR2.VoidRaidCrab.CentralLegController.UpdateLegsAuthority += RemoveStunCollapse;
@@ -324,6 +326,16 @@ namespace FathomlessVoidling
       On.EntityStates.VoidRaidCrab.FireWardWipe.GetMinimumInterruptPriority += IncreaseInterruptPriorityFireWardWipe;
     }
 
+    private void AddJointDeathDelay(On.EntityStates.VoidRaidCrab.Joint.PreDeathState.orig_OnEnter orig, EntityStates.VoidRaidCrab.Joint.PreDeathState self)
+    {
+      orig(self);
+      if (self.isAuthority)
+      {
+        ChildLocator childLocator = self.gameObject.GetComponent<ChildLocatorMirrorController>().referenceLocator;
+        childLocator.gameObject.GetComponent<LegController>().CompleteBreakAuthority();
+      }
+    }
+
     private void RemoveStunCollapse(On.RoR2.VoidRaidCrab.CentralLegController.orig_UpdateLegsAuthority orig, CentralLegController self)
     {
       self.legSupportTracker.allLegsNeededForAnimation = !self.bodyStateMachine.IsInMainState();
@@ -334,7 +346,6 @@ namespace FathomlessVoidling
         if (self.legControllers[index].IsBreakPending())
         {
           flag = true;
-          self.legControllers[index].CompleteBreakAuthority();
         }
       }
       if (flag)
@@ -627,6 +638,11 @@ namespace FathomlessVoidling
             Destroy(joint);
         }
         Run.instance.BeginGameOver(voidEnding);
+        /*
+        GameObject gauntlet = GameObject.Find("HOLDER: Gauntlets");
+        if (gauntlet)
+          gauntlet.GetComponent<VoidRaidGauntletController>().SpawnOutroPortal();
+          */
         GameObject phases = GameObject.Find("EncounterPhases");
         if (phases)
           phases.transform.GetChild(0).GetChild(3).gameObject.SetActive(false);
@@ -749,6 +765,15 @@ namespace FathomlessVoidling
           GameObject p3Music = phases.transform.GetChild(2).GetChild(1).gameObject;
           p3Music.name = "MusicEnd";
           p3Music.transform.parent = phases.transform.GetChild(0);
+          GameObject swapMusic = new GameObject("MusicSwap");
+          swapMusic.AddComponent<NetworkIdentity>();
+          MusicTrackOverride trackOverride = swapMusic.AddComponent<MusicTrackOverride>();
+          trackOverride.priority = 1;
+          trackOverride.track = MusicTrackCatalog.FindMusicTrackDef("muGameplayDLC1_08");
+          swapMusic.transform.parent = phases.transform.GetChild(0);
+          swapMusic.SetActive(false);
+          if (NetworkServer.active)
+            NetworkServer.Spawn(swapMusic);
           if (NetworkServer.active)
           {
             NetworkServer.Destroy(phases.transform.GetChild(1).gameObject);

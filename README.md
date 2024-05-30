@@ -60,6 +60,10 @@
 
 ## Changelog
 
+**0.9.9**
+
+- Fixes crash from the Devotion Update
+
 **0.9.8**
 
 - Fixes single joint breaking multiple times instead of once

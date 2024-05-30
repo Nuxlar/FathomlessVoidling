@@ -23,7 +23,7 @@ using UnityEngine.Networking.Types;
 
 namespace FathomlessVoidling
 {
-  [BepInPlugin("com.Nuxlar.FathomlessVoidling", "FathomlessVoidling", "0.9.8")]
+  [BepInPlugin("com.Nuxlar.FathomlessVoidling", "FathomlessVoidling", "0.9.9")]
 
   public class FathomlessVoidling : BaseUnityPlugin
   {
@@ -304,8 +304,8 @@ namespace FathomlessVoidling
       On.RoR2.VoidRaidCrab.LegController.SetJointMaster += SetJointMaster;
       On.EntityStates.VoidRaidCrab.Joint.PreDeathState.OnEnter += AddJointDeathDelay;
       // On.EntityStates.VoidRaidCrab.Joint.PreDeathState.FixedUpdate += AddJointBreakAuthority;
-      On.EntityStates.VoidRaidCrab.Joint.PreDeathState.SpawnJointEffect += SpawnJointEffectMP;
-      On.EntityStates.VoidRaidCrab.Joint.DeathState.OnEnter += SpawnJointDeathEffectMP;
+      // On.EntityStates.VoidRaidCrab.Joint.PreDeathState.SpawnJointEffect += SpawnJointEffectMP;
+      // On.EntityStates.VoidRaidCrab.Joint.DeathState.OnEnter += SpawnJointDeathEffectMP;
       On.RoR2.VoidRaidCrab.CentralLegController.UpdateLegsAuthority += RemoveStunCollapse;
       On.EntityStates.VoidRaidCrab.SpawnState.OnEnter += VoidRaidCrab_SpawnState;
       On.EntityStates.VoidRaidCrab.Collapse.OnEnter += Collapse_OnEnter;

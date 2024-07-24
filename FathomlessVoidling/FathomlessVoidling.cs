@@ -1,29 +1,24 @@
 using BepInEx;
+using BepInEx.Configuration;
 using RoR2;
 using RoR2.VoidRaidCrab;
 using R2API;
 using EntityStates.VoidRaidCrab;
 using EntityStates;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Networking;
 using UnityEngine.AddressableAssets;
-using R2API.Utils;
 using RoR2.Projectile;
 using RoR2.CharacterAI;
 using RoR2.Skills;
-using HarmonyLib;
-using MonoMod.RuntimeDetour;
-using System.Diagnostics;
 using RoR2.Audio;
-using UnityEngine.Networking.Types;
 
 namespace FathomlessVoidling
 {
-  [BepInPlugin("com.Nuxlar.FathomlessVoidling", "FathomlessVoidling", "0.9.9")]
+  [BepInPlugin("com.Nuxlar.FathomlessVoidling", "FathomlessVoidling", "0.9.10")]
 
   public class FathomlessVoidling : BaseUnityPlugin
   {
@@ -71,8 +66,22 @@ namespace FathomlessVoidling
     private bool shouldGauntlet = false;
     private int jointCounter = 0;
     private static SkillDef finalStandDef = Addressables.LoadAssetAsync<SkillDef>("RoR2/DLC1/VoidRaidCrab/RaidCrabFinalStand.asset").WaitForCompletion();
+
+    public static ConfigEntry<float> bodyBaseHP;
+    public static ConfigEntry<float> bodyLevelHP;
+    public static ConfigEntry<float> jointBaseHP;
+    public static ConfigEntry<float> jointLevelHP;
+    public static ConfigEntry<float> loopMultiplier;
+    private static ConfigFile FVConfig { get; set; }
+
     public void Awake()
     {
+      FVConfig = new ConfigFile(Paths.ConfigPath + "\\com.Nuxlar.FathomlessVoidling.cfg", true);
+      loopMultiplier = FVConfig.Bind<float>("General", "Loop Multiplier", 1f, "Loop Count x Multiplier x All HP Values. Set to 0 for no multiplying.");
+      bodyBaseHP = FVConfig.Bind<float>("Stats", "Main Body Base HP", 500f, "Base HP for the main body, higher main hp and lower joint hp will make joints do less damage. Vanilla: 8000");
+      bodyLevelHP = FVConfig.Bind<float>("Stats", "Main Body Level HP", 150f, "Level HP for the main body, higher main hp and lower joint hp will make joints do less damage. Vanilla: 2400");
+      jointBaseHP = FVConfig.Bind<float>("Stats", "Joint Base HP", 500f, "Base HP for each joint. Vanilla: 1000");
+      jointLevelHP = FVConfig.Bind<float>("Stats", "Joint Level HP", 150f, "Level HP for each joint. Vanilla: 300");
       /*
       Destroy(voidEye.GetComponent<PurchaseInteraction>());
       Destroy(voidEye.GetComponent<Highlight>());
@@ -257,11 +266,11 @@ namespace FathomlessVoidling
       ContentAddition.AddEntityState<BetterReEmerge>(out _);
 
       spinBeamVFX.transform.localScale *= 2;
-      voidling.GetComponent<CharacterBody>().baseMaxHealth = 500f; // 8000
-      voidling.GetComponent<CharacterBody>().levelMaxHealth = 150; // 2400
+      voidling.GetComponent<CharacterBody>().baseMaxHealth = bodyBaseHP.Value; // 8000
+      voidling.GetComponent<CharacterBody>().levelMaxHealth = bodyLevelHP.Value; // 2400
       voidling.GetComponent<CharacterBody>().baseArmor = 40;
-      joint.GetComponent<CharacterBody>().baseMaxHealth = 500; // 1000
-      joint.GetComponent<CharacterBody>().levelMaxHealth = 150f; // 300
+      joint.GetComponent<CharacterBody>().baseMaxHealth = jointBaseHP.Value; // 1000
+      joint.GetComponent<CharacterBody>().levelMaxHealth = jointLevelHP.Value; // 300
 
       spawnEffect.transform.localScale *= 2;
 
@@ -508,7 +517,7 @@ namespace FathomlessVoidling
     private void VacuumAttack_OnEnter(On.EntityStates.VoidRaidCrab.VacuumAttack.orig_OnEnter orig, VacuumAttack self)
     {
       VacuumAttack.killRadiusCurve = AnimationCurve.Linear(0, 0, 1, 100);
-      VacuumAttack.pullMagnitudeCurve = AnimationCurve.Linear(0, 0, 1, 45);
+      // VacuumAttack.pullMagnitudeCurve = AnimationCurve.Linear(0, 0, 1, 45);
       orig(self);
     }
 
@@ -743,17 +752,21 @@ namespace FathomlessVoidling
         {
           if (Run.instance.loopClearCount > 1)
           {
-            voidling.GetComponent<CharacterBody>().baseMaxHealth = 500 * Run.instance.loopClearCount; // 8000
-            voidling.GetComponent<CharacterBody>().levelMaxHealth = 150 * Run.instance.loopClearCount; // 2400
-            joint.GetComponent<CharacterBody>().baseMaxHealth = 500 * Run.instance.loopClearCount; // 1000
-            joint.GetComponent<CharacterBody>().levelMaxHealth = 150 * Run.instance.loopClearCount; ; // 300
+            float multiplier = Run.instance.loopClearCount * loopMultiplier.Value;
+            if (multiplier == 0)
+              multiplier = 1;
+
+            voidling.GetComponent<CharacterBody>().baseMaxHealth = bodyBaseHP.Value * multiplier; // 8000
+            voidling.GetComponent<CharacterBody>().levelMaxHealth = bodyLevelHP.Value * multiplier; // 2400
+            joint.GetComponent<CharacterBody>().baseMaxHealth = jointBaseHP.Value * multiplier; // 1000
+            joint.GetComponent<CharacterBody>().levelMaxHealth = jointLevelHP.Value * multiplier; ; // 300
           }
           else
           {
-            voidling.GetComponent<CharacterBody>().baseMaxHealth = 500; // 8000
-            voidling.GetComponent<CharacterBody>().levelMaxHealth = 150; // 2400
-            joint.GetComponent<CharacterBody>().baseMaxHealth = 500; // 1000
-            joint.GetComponent<CharacterBody>().levelMaxHealth = 150; ; // 300
+            voidling.GetComponent<CharacterBody>().baseMaxHealth = bodyBaseHP.Value; // 8000
+            voidling.GetComponent<CharacterBody>().levelMaxHealth = bodyLevelHP.Value; // 2400
+            joint.GetComponent<CharacterBody>().baseMaxHealth = jointBaseHP.Value; // 1000
+            joint.GetComponent<CharacterBody>().levelMaxHealth = jointLevelHP.Value; ; // 300
           }
         }
         jointCounter = 0;

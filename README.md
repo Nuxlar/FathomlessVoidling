@@ -1,19 +1,16 @@
 # Fathomless Voidling
 
-**SUBMIT UNKNOWN ISSUES USING THE LINK ABOVE**
+**UNMAINTAINED (UPDATED WITH DEVOTION, FUTURE UPDATES MIGHT BREAK IT). IF YOU'D LIKE TO CONTINUE/MAINTAIN THE MOD MESSAGE ME IN THE ROR2 MODDING DISCORD**
 
-**FEEDBACK FORM [HERE](https://forms.gle/Hr8LDYBE7HZ8aF6w9)**
+**SUBMIT UNKNOWN ISSUES USING THE LINK ABOVE, EVEN IF UNMAINTAINED, USEFUL FOR FUTURE MAINTAINER(S)**
 
 ## Info
 
 - Your run ends after Voidling dies (will be fixed next update - probably)
-- Voidling has the stats of an alt final boss not a loop boss currently (fight after mithrix)
 - You cannot attack Voidling's main body just the joints
-- There's no config (for now)
 - Voidling doesn't take damage at the healthbar points until he phase transitions (check phase info below)
 - Small Voidling's attacks are changed as well (in case you spawn them in using debugtoolkit/aerolt)
 - Attacks might change for the 1.0 (adding/swapping)
-- This mod is currently held together with duct tape but I wanted to get feedback while I take a break from it
 
 ## Known Issues
 
@@ -59,6 +56,11 @@
 </details>
 
 ## Changelog
+
+**0.9.10**
+
+- Adds basic config
+- Nerfs black hole pull back to vanilla (without a movement ability or a bunch of speed it's immediate death)
 
 **0.9.9**
 

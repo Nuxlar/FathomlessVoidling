@@ -15,10 +15,11 @@ using RoR2.Projectile;
 using RoR2.CharacterAI;
 using RoR2.Skills;
 using RoR2.Audio;
+using System.Collections;
 
 namespace FathomlessVoidling
 {
-  [BepInPlugin("com.Nuxlar.FathomlessVoidling", "FathomlessVoidling", "0.9.10")]
+  [BepInPlugin("com.Nuxlar.FathomlessVoidling", "FathomlessVoidling", "0.9.11")]
 
   public class FathomlessVoidling : BaseUnityPlugin
   {
@@ -743,9 +744,9 @@ namespace FathomlessVoidling
         orig(self);
     }
 
-    private void Stage_Start(On.RoR2.Stage.orig_Start orig, Stage self)
+    private IEnumerator Stage_Start(On.RoR2.Stage.orig_Start orig, Stage self)
     {
-      orig(self);
+      yield return orig(self);
       if (self.sceneDef.cachedName == "voidraid")
       {
         if (Run.instance)
@@ -772,7 +773,7 @@ namespace FathomlessVoidling
         jointCounter = 0;
         shouldGauntlet = false;
         GameObject phases = GameObject.Find("EncounterPhases");
-        Transform cam = GameObject.Find("RaidVoid").transform.GetChild(8);
+        Transform cam = GameObject.Find("RaidVoid").transform.GetChild(5);
         if (phases)
         {
           GameObject p3Music = phases.transform.GetChild(2).GetChild(1).gameObject;

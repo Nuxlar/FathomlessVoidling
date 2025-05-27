@@ -24,7 +24,7 @@
 
 ### Phase 1
 
-- Primary: Void Missiles - Increased size, now have an explosive radius, less tracking, oscillating
+- Primary: Void Missiles - Increased size, now have an explosive radius, less tracking
 - Secondary: Portal Beams - Summons portals that fire predictive lasers at the closest enemy to the portal
 - Utility: Void Laser - Fires a large laser and spins around the arena
 - Special: Singularity - Creates a black hole under itself, instantly killing anything that enters

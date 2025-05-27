@@ -77,6 +77,10 @@ namespace FathomlessVoidling
 
     public void Awake()
     {
+      // TODOS
+      /*
+        Remove joint base and level regen
+      */
       FVConfig = new ConfigFile(Paths.ConfigPath + "\\com.Nuxlar.FathomlessVoidling.cfg", true);
       loopMultiplier = FVConfig.Bind<float>("General", "Loop Multiplier", 1f, "Loop Count x Multiplier x All HP Values. Set to 0 for no multiplying.");
       bodyBaseHP = FVConfig.Bind<float>("Stats", "Main Body Base HP", 500f, "Base HP for the main body, higher main hp and lower joint hp will make joints do less damage. Vanilla: 8000");
@@ -272,6 +276,8 @@ namespace FathomlessVoidling
       voidling.GetComponent<CharacterBody>().baseArmor = 40;
       joint.GetComponent<CharacterBody>().baseMaxHealth = jointBaseHP.Value; // 1000
       joint.GetComponent<CharacterBody>().levelMaxHealth = jointLevelHP.Value; // 300
+      joint.GetComponent<CharacterBody>().baseRegen = 0f; // 1000
+      joint.GetComponent<CharacterBody>().levelRegen = 0f; // 300
 
       spawnEffect.transform.localScale *= 2;
 
